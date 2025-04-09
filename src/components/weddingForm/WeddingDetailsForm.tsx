@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,6 +9,7 @@ import { format } from 'date-fns';
 import { Calendar as CalendarIcon } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { toast } from 'sonner';
+import { userStore } from '@/store/userStore';
 
 interface FormSection {
   id: string;
@@ -39,6 +39,17 @@ const WeddingDetailsForm: React.FC = () => {
     accommodationInfo: '',
     additionalNotes: '',
   });
+  
+  useEffect(() => {
+    const userData = userStore.getData();
+    if (userData.partner1Name || userData.partner2Name) {
+      setFormData(prev => ({
+        ...prev,
+        partner1Name: userData.partner1Name || prev.partner1Name,
+        partner2Name: userData.partner2Name || prev.partner2Name,
+      }));
+    }
+  }, []);
   
   const sections: FormSection[] = [
     {
@@ -94,6 +105,10 @@ const WeddingDetailsForm: React.FC = () => {
     } else {
       // Submit the form
       console.log('Form submitted:', formData);
+      
+      // Save the wedding details to localStorage for template population
+      localStorage.setItem('weddingDetails', JSON.stringify(formData));
+      
       toast.success('Wedding details saved successfully!');
       navigate('/template-selection');
     }

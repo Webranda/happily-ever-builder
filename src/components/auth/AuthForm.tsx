@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
+import { userStore } from '@/store/userStore';
 
 type AuthMode = 'login' | 'register';
 
@@ -14,6 +15,8 @@ const AuthForm: React.FC = () => {
     email: '',
     password: '',
     confirmPassword: '',
+    partner1Name: '',
+    partner2Name: '',
   });
   
   const navigate = useNavigate();
@@ -40,8 +43,17 @@ const AuthForm: React.FC = () => {
         throw new Error('Please fill in all required fields');
       }
       
-      if (mode === 'register' && formData.password !== formData.confirmPassword) {
-        throw new Error('Passwords do not match');
+      if (mode === 'register') {
+        if (formData.password !== formData.confirmPassword) {
+          throw new Error('Passwords do not match');
+        }
+        
+        // Save user data to our store
+        userStore.updateData({
+          email: formData.email,
+          partner1Name: formData.partner1Name,
+          partner2Name: formData.partner2Name
+        });
       }
       
       // In a real app, you would handle authentication with a backend
@@ -78,6 +90,36 @@ const AuthForm: React.FC = () => {
               required
             />
           </div>
+
+          {mode === 'register' && (
+            <>
+              <div className="form-control">
+                <label htmlFor="partner1Name" className="form-label">Your Name</label>
+                <Input
+                  id="partner1Name"
+                  name="partner1Name"
+                  type="text"
+                  placeholder="e.g. Sarah"
+                  value={formData.partner1Name}
+                  onChange={handleChange}
+                  className="form-input"
+                />
+              </div>
+              
+              <div className="form-control">
+                <label htmlFor="partner2Name" className="form-label">Partner's Name</label>
+                <Input
+                  id="partner2Name"
+                  name="partner2Name"
+                  type="text"
+                  placeholder="e.g. Michael"
+                  value={formData.partner2Name}
+                  onChange={handleChange}
+                  className="form-input"
+                />
+              </div>
+            </>
+          )}
 
           <div className="form-control">
             <label htmlFor="password" className="form-label">Password</label>
