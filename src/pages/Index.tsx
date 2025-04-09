@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -114,11 +113,7 @@ const Index = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 md:py-32 relative overflow-hidden gradient-bg-3">
-        <div className="absolute inset-0 z-0 opacity-20">
-          <div className="absolute inset-0 bg-white/40" />
-        </div>
-        
+      <section className="py-16 md:py-32 relative overflow-hidden bg-wedding-cream">
         <Container className="relative z-1 text-center max-w-3xl">
           <h2 className="text-3xl md:text-4xl mb-6 font-serif animate-fade-in text-wedding-navy">
             Start Creating Your Wedding Website Today
