@@ -12,6 +12,7 @@ import Dashboard from "./pages/Dashboard";
 import Templates from "./pages/Templates";
 import PhotoGallery from "./pages/PhotoGallery";
 import GuestManagement from "./pages/GuestManagement";
+import EventSchedule from "./pages/EventSchedule";
 import TemplatePreview from "./pages/TemplatePreview";
 import NotFound from "./pages/NotFound";
 
@@ -32,6 +33,7 @@ const App = () => (
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/photo-gallery" element={<PhotoGallery />} />
           <Route path="/guest-list" element={<GuestManagement />} />
+          <Route path="/event-schedule" element={<EventSchedule />} />
           <Route path="/preview/:templateId" element={<TemplatePreview />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

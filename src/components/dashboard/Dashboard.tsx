@@ -97,7 +97,7 @@ const Dashboard: React.FC = () => {
               className="border-wedding-navy text-wedding-navy hover:bg-wedding-navy/5" 
               asChild
             >
-              <Link to="/preview"><Globe className="mr-2 h-4 w-4" /> Preview Site</Link>
+              <Link to="/templates"><Globe className="mr-2 h-4 w-4" /> Preview Site</Link>
             </Button>
             <Button className="bg-wedding-gold hover:bg-wedding-gold/90 text-white">
               <Heart className="mr-2 h-4 w-4" /> Publish Site
@@ -131,7 +131,7 @@ const Dashboard: React.FC = () => {
           icon={<Image className="h-5 w-5 text-green-600" />}
           to="/photo-gallery"
           accent="green"
-          status="not-started"
+          status="in-progress"
         />
         
         <DashboardCard
@@ -149,7 +149,7 @@ const Dashboard: React.FC = () => {
           icon={<Users className="h-5 w-5 text-pink-600" />}
           to="/guest-list"
           accent="pink"
-          status="not-started"
+          status="in-progress"
         />
       </div>
     </div>

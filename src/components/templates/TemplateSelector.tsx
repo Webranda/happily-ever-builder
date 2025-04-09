@@ -41,6 +41,10 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
 
   const handleSelectTemplate = (id: string) => {
     setSelectedTemplate(id);
+    
+    if (isPreviewOnly && onSelectAction) {
+      onSelectAction();
+    }
   };
 
   const handleContinue = () => {
@@ -52,12 +56,8 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
     // In a real application, you would save the selected template to state or backend
     console.log('Selected template:', selectedTemplate);
     
-    if (isPreviewOnly && onSelectAction) {
-      onSelectAction();
-    } else {
-      toast.success('Template selected successfully!');
-      navigate('/dashboard');
-    }
+    toast.success('Template selected successfully!');
+    navigate('/dashboard');
   };
 
   const handlePreview = (templateId: string) => {

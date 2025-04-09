@@ -41,7 +41,7 @@ const Templates = () => {
 
       {/* Main Content */}
       <main className="py-10 md:py-16">
-        <Container maxWidth="xl">
+        <Container maxWidth="2xl">
           <div className="mb-10 text-center">
             <h1 className="text-3xl md:text-4xl mb-4 animate-fade-in">
               Beautiful Wedding Website Templates

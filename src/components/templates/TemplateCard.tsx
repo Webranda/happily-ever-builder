@@ -69,7 +69,7 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
             )}
             onClick={() => onSelect(id)}
           >
-            {isSelected && !isPreviewOnly ? 'Selected' : 'Select'}
+            {isPreviewOnly ? 'Use This Template' : (isSelected ? 'Selected' : 'Select')}
           </Button>
         </div>
       </div>

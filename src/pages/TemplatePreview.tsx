@@ -66,7 +66,7 @@ const TemplatePreview = () => {
           onClick={closePreview}
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Templates
+          <span className="hidden sm:inline">Back to Templates</span>
         </Button>
         <div className="text-sm md:text-base font-medium">Preview: {template.name}</div>
         <Button
@@ -87,15 +87,15 @@ const TemplatePreview = () => {
         >
           <div className="absolute inset-0 bg-black bg-opacity-40"></div>
           <div className="relative z-10 text-center text-white px-4 py-16 max-w-3xl mx-auto">
-            <h1 className="text-5xl md:text-7xl mb-6" style={{ fontFamily: template.fontFamily }}>
+            <h1 className="text-4xl md:text-7xl mb-6" style={{ fontFamily: template.fontFamily }}>
               Sarah & Michael
             </h1>
             <p className="text-xl md:text-2xl mb-8">
               We're getting married!
             </p>
-            <div className="text-3xl mb-6">September 15, 2024</div>
+            <div className="text-2xl md:text-3xl mb-6">September 15, 2024</div>
             <Button 
-              className={`${template.buttonStyle} text-white px-8 py-6 h-auto rounded-md text-lg`}
+              className={`${template.buttonStyle} text-white px-6 py-4 md:px-8 md:py-6 h-auto rounded-md text-lg`}
             >
               RSVP Now
             </Button>
@@ -108,7 +108,7 @@ const TemplatePreview = () => {
             <h2 className="text-3xl md:text-4xl mb-8" style={{ color: template.primaryColor }}>Our Story</h2>
             <div className="flex flex-col md:flex-row items-center gap-8 mb-12">
               <div className="flex-1">
-                <div className="aspect-square overflow-hidden rounded-full max-w-[250px] mx-auto">
+                <div className="aspect-square overflow-hidden rounded-full max-w-[200px] md:max-w-[250px] mx-auto">
                   <img 
                     src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1288&auto=format&fit=crop" 
                     alt="Sarah" 
@@ -118,11 +118,11 @@ const TemplatePreview = () => {
                 <h3 className="text-2xl mt-4" style={{ color: template.primaryColor }}>Sarah Johnson</h3>
                 <p className="text-gray-600">The Bride</p>
               </div>
-              <div className="text-5xl">
+              <div className="text-5xl py-4 md:py-0">
                 <Heart style={{ color: template.primaryColor }} className="h-12 w-12 mx-auto" />
               </div>
               <div className="flex-1">
-                <div className="aspect-square overflow-hidden rounded-full max-w-[250px] mx-auto">
+                <div className="aspect-square overflow-hidden rounded-full max-w-[200px] md:max-w-[250px] mx-auto">
                   <img 
                     src="https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?q=80&w=1740&auto=format&fit=crop" 
                     alt="Michael" 
@@ -190,7 +190,7 @@ const TemplatePreview = () => {
             <h2 className="text-3xl md:text-4xl mb-4" style={{ color: template.primaryColor }}>RSVP</h2>
             <p className="mb-8 text-gray-700">We would be honored to have you join us on our special day. Please let us know if you can make it!</p>
             <Button 
-              className={`${template.buttonStyle} text-white px-8 py-6 h-auto rounded-md text-lg mb-4`}
+              className={`${template.buttonStyle} text-white px-6 py-4 md:px-8 md:py-6 h-auto rounded-md text-lg mb-4`}
             >
               Respond to Invitation
             </Button>
