@@ -18,7 +18,7 @@ const Index = () => {
               Sign In
             </Link>
             <Button 
-              className="bg-wedding-navy hover:bg-wedding-navy/90 text-white" 
+              className="bg-wedding-gold hover:bg-wedding-gold/90 text-wedding-navy font-medium" 
               asChild
             >
               <Link to="/auth">Get Started</Link>
@@ -28,18 +28,18 @@ const Index = () => {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative py-16 md:py-24 overflow-hidden">
+      <section className="relative py-16 md:py-24 overflow-hidden gradient-bg-1">
         <div className="absolute inset-0 z-0 opacity-30">
           <div className="absolute inset-0 bg-gradient-radial from-wedding-cream via-transparent to-transparent" />
         </div>
         
         <Container className="relative z-1 text-center max-w-4xl">
-          <div className="inline-block px-3 py-1 mb-6 rounded-full bg-wedding-cream text-wedding-navy font-medium text-sm animate-fade-in">
+          <div className="inline-block px-3 py-1 mb-6 rounded-full bg-wedding-blush text-wedding-navy font-medium text-sm animate-fade-in">
             Create Your Dream Wedding Website
           </div>
           
           <h1 className="text-4xl md:text-6xl mb-6 font-serif animate-slide-down">
-            Tell Your <span className="text-wedding-navy">Love Story</span> With a Beautiful Wedding Website
+            Tell Your <span className="text-wedding-gold decorated-border">Love Story</span> With a Beautiful Wedding Website
           </h1>
           
           <p className="text-lg md:text-xl text-gray-600 mb-10 max-w-2xl mx-auto animate-fade-in">
@@ -49,7 +49,7 @@ const Index = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center animate-slide-up">
             <Button 
               size="lg" 
-              className="bg-wedding-navy hover:bg-wedding-navy/90 text-white px-8 btn-hover-effect"
+              className="bg-wedding-gold hover:bg-wedding-gold/90 text-wedding-navy font-medium px-8 btn-hover-effect"
               asChild
             >
               <Link to="/auth">Create Your Website</Link>
@@ -68,10 +68,12 @@ const Index = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-16 md:py-24 bg-wedding-cream/30">
+      <section className="py-16 md:py-24 bg-pattern-light">
         <Container>
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl mb-4 animate-fade-in">Create Your Perfect Wedding Website</h2>
+            <h2 className="text-3xl md:text-4xl mb-4 animate-fade-in">
+              Create Your <span className="text-wedding-gold">Perfect</span> Wedding Website
+            </h2>
             <p className="text-gray-600 max-w-2xl mx-auto animate-fade-in">
               Our easy-to-use platform helps you create a beautiful wedding website in minutes.
             </p>
@@ -82,22 +84,25 @@ const Index = () => {
               {
                 title: "Beautiful Templates",
                 description: "Choose from a variety of elegant, professionally designed templates that match your wedding style.",
-                delay: "0ms"
+                delay: "0ms",
+                className: "color-card-1"
               },
               {
                 title: "Easy Customization",
                 description: "Personalize your site with your colors, photos, and details to make it uniquely yours.",
-                delay: "150ms"
+                delay: "150ms",
+                className: "color-card-2"
               },
               {
                 title: "Mobile Friendly",
                 description: "Your wedding website looks perfect on any device, so guests can access it anywhere.",
-                delay: "300ms"
+                delay: "300ms",
+                className: "color-card-3"
               }
             ].map((feature, index) => (
               <div 
                 key={index}
-                className="glass-card rounded-xl p-6 text-center animate-fade-in"
+                className={`glass-card rounded-xl p-6 text-center animate-fade-in feature-card ${feature.className}`}
                 style={{ animationDelay: feature.delay }}
               >
                 <h3 className="text-xl mb-3 font-serif">{feature.title}</h3>
@@ -109,17 +114,17 @@ const Index = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 md:py-32 relative overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-wedding-blush/20" />
+      <section className="py-16 md:py-32 relative overflow-hidden gradient-bg-3">
+        <div className="absolute inset-0 z-0 opacity-20">
+          <div className="absolute inset-0 bg-white/40" />
         </div>
         
         <Container className="relative z-1 text-center max-w-3xl">
-          <h2 className="text-3xl md:text-4xl mb-6 font-serif animate-fade-in">
+          <h2 className="text-3xl md:text-4xl mb-6 font-serif animate-fade-in text-wedding-navy">
             Start Creating Your Wedding Website Today
           </h2>
           
-          <p className="text-lg text-gray-600 mb-10 animate-fade-in">
+          <p className="text-lg text-wedding-navy/80 mb-10 animate-fade-in">
             Join thousands of happy couples who have created beautiful wedding websites with EverAfter.
           </p>
           
@@ -140,10 +145,10 @@ const Index = () => {
             <Logo className="text-white mb-6 md:mb-0" />
             
             <div className="flex flex-col md:flex-row gap-6 md:gap-12 text-sm">
-              <Link to="/about" className="hover:text-wedding-cream">About Us</Link>
-              <Link to="/templates" className="hover:text-wedding-cream">Templates</Link>
-              <Link to="/privacy" className="hover:text-wedding-cream">Privacy Policy</Link>
-              <Link to="/terms" className="hover:text-wedding-cream">Terms of Service</Link>
+              <Link to="/about" className="hover:text-wedding-gold transition-colors">About Us</Link>
+              <Link to="/templates" className="hover:text-wedding-gold transition-colors">Templates</Link>
+              <Link to="/privacy" className="hover:text-wedding-gold transition-colors">Privacy Policy</Link>
+              <Link to="/terms" className="hover:text-wedding-gold transition-colors">Terms of Service</Link>
             </div>
           </div>
           

@@ -113,11 +113,40 @@
   .btn-hover-effect:hover::after {
     @apply opacity-20;
   }
+
+  /* Adding colorful accents */
+  .accent-gradient {
+    @apply bg-gradient-to-r from-wedding-blush via-wedding-gold to-wedding-sage text-transparent bg-clip-text;
+  }
+  
+  .highlight-text {
+    @apply text-wedding-gold font-medium;
+  }
+  
+  .decorated-border {
+    @apply border-b-2 border-wedding-gold/40 pb-1;
+  }
+  
+  .color-card-1 {
+    @apply bg-gradient-to-br from-wedding-cream to-wedding-blush/40;
+  }
+  
+  .color-card-2 {
+    @apply bg-gradient-to-br from-wedding-sage/40 to-wedding-sage/20;
+  }
+  
+  .color-card-3 {
+    @apply bg-gradient-to-br from-wedding-taupe/30 to-wedding-cream;
+  }
 }
 
 @layer components {
   .container-padding {
     @apply px-4 sm:px-6 md:px-8 lg:px-12;
+  }
+  
+  .feature-card {
+    @apply rounded-xl p-6 transition-all duration-300 hover:shadow-medium;
   }
 }
 
@@ -166,4 +195,25 @@
 .loader {
   @apply w-6 h-6 border-2 border-gray-300 border-t-wedding-gold rounded-full;
   animation: loader-spin 1s linear infinite;
+}
+
+/* Adding colorful section backgrounds */
+.bg-pattern-light {
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23f9e6e6' fill-opacity='0.2'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+.bg-pattern-dark {
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23262E41' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+.gradient-bg-1 {
+  background: linear-gradient(135deg, rgba(253,248,243,0.8) 0%, rgba(249,230,230,0.4) 100%);
+}
+
+.gradient-bg-2 {
+  background: linear-gradient(135deg, rgba(226,232,228,0.5) 0%, rgba(215,206,199,0.2) 100%);
+}
+
+.gradient-bg-3 {
+  background: linear-gradient(to right, #ffc3a0 0%, #ffafbd 50%, #ffc3a0 100%);
 }

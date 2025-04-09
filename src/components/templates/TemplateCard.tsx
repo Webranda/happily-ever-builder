@@ -40,14 +40,14 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
         />
         {isSelected && !isPreviewOnly && (
-          <div className="absolute top-3 right-3 bg-wedding-gold text-white px-3 py-1 rounded-full text-sm font-medium">
+          <div className="absolute top-3 right-3 bg-wedding-gold text-wedding-navy px-3 py-1 rounded-full text-sm font-medium">
             Selected
           </div>
         )}
       </div>
       
-      <div className="p-5">
-        <h3 className="font-serif text-xl mb-2">{name}</h3>
+      <div className="p-5 bg-white">
+        <h3 className="font-serif text-xl mb-2 text-wedding-navy">{name}</h3>
         <p className="text-gray-600 text-sm mb-4 line-clamp-2">{description}</p>
         
         <div className="flex justify-between items-center">
@@ -65,7 +65,7 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
               "text-sm px-4 py-1 h-auto",
               isSelected && !isPreviewOnly
                 ? "border border-wedding-gold/50 text-wedding-gold hover:bg-wedding-gold/5" 
-                : "bg-wedding-navy hover:bg-wedding-navy/90 text-white"
+                : "bg-wedding-gold hover:bg-wedding-gold/90 text-wedding-navy font-medium"
             )}
             onClick={() => onSelect(id)}
           >
