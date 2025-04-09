@@ -140,11 +140,10 @@ const Index = () => {
             <Logo className="text-white mb-6 md:mb-0" />
             
             <div className="flex flex-col md:flex-row gap-6 md:gap-12 text-sm">
-              <Link to="#" className="hover:text-wedding-cream">About Us</Link>
-              <Link to="#" className="hover:text-wedding-cream">Features</Link>
-              <Link to="#" className="hover:text-wedding-cream">Templates</Link>
-              <Link to="#" className="hover:text-wedding-cream">Privacy Policy</Link>
-              <Link to="#" className="hover:text-wedding-cream">Terms of Service</Link>
+              <Link to="/about" className="hover:text-wedding-cream">About Us</Link>
+              <Link to="/templates" className="hover:text-wedding-cream">Templates</Link>
+              <Link to="/privacy" className="hover:text-wedding-cream">Privacy Policy</Link>
+              <Link to="/terms" className="hover:text-wedding-cream">Terms of Service</Link>
             </div>
           </div>
           

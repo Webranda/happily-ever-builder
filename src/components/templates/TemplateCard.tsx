@@ -10,6 +10,8 @@ interface TemplateCardProps {
   image: string;
   isSelected: boolean;
   onSelect: (id: string) => void;
+  onPreview: () => void;
+  isPreviewOnly?: boolean;
 }
 
 const TemplateCard: React.FC<TemplateCardProps> = ({
@@ -19,6 +21,8 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
   image,
   isSelected,
   onSelect,
+  onPreview,
+  isPreviewOnly = false
 }) => {
   return (
     <div 
@@ -35,7 +39,7 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
           alt={`${name} template preview`} 
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
         />
-        {isSelected && (
+        {isSelected && !isPreviewOnly && (
           <div className="absolute top-3 right-3 bg-wedding-gold text-white px-3 py-1 rounded-full text-sm font-medium">
             Selected
           </div>
@@ -50,22 +54,22 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
           <Button 
             variant="outline"
             className="text-sm px-3 py-1 h-auto border-wedding-navy/50 text-wedding-navy hover:bg-wedding-navy/5"
-            onClick={() => window.open(`#preview-${id}`, '_blank')}
+            onClick={onPreview}
           >
             Preview
           </Button>
           
           <Button
-            variant={isSelected ? "ghost" : "default"}
+            variant={isSelected && !isPreviewOnly ? "ghost" : "default"}
             className={cn(
               "text-sm px-4 py-1 h-auto",
-              isSelected 
+              isSelected && !isPreviewOnly
                 ? "border border-wedding-gold/50 text-wedding-gold hover:bg-wedding-gold/5" 
                 : "bg-wedding-navy hover:bg-wedding-navy/90 text-white"
             )}
             onClick={() => onSelect(id)}
           >
-            {isSelected ? 'Selected' : 'Select'}
+            {isSelected && !isPreviewOnly ? 'Selected' : 'Select'}
           </Button>
         </div>
       </div>

@@ -5,7 +5,7 @@ import TemplateCard from './TemplateCard';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
-// Sample template data
+// Reduced template data to 3
 const templates = [
   {
     id: 'elegant',
@@ -25,27 +25,17 @@ const templates = [
     description: 'Clean lines and a minimalist approach create a contemporary feel for the modern couple.',
     image: 'https://images.unsplash.com/photo-1507504031003-b417219a0fde?q=80&w=2370&auto=format&fit=crop',
   },
-  {
-    id: 'romantic',
-    name: 'Romantic Blush',
-    description: 'Soft colors and dreamy design elements create a romantic atmosphere for your special day.',
-    image: 'https://images.unsplash.com/photo-1546032996-6dfacbacbf3f?q=80&w=2274&auto=format&fit=crop',
-  },
-  {
-    id: 'botanical',
-    name: 'Botanical Garden',
-    description: 'Lush greenery and floral elements bring natural beauty to your wedding website.',
-    image: 'https://images.unsplash.com/photo-1509842732562-9da9a8be1efd?q=80&w=2574&auto=format&fit=crop',
-  },
-  {
-    id: 'beach',
-    name: 'Coastal Breeze',
-    description: 'Sand, sea, and sky inspire this airy design perfect for beach or destination weddings.',
-    image: 'https://images.unsplash.com/photo-1544078751-58fee2d8a03b?q=80&w=2530&auto=format&fit=crop',
-  },
 ];
 
-const TemplateSelector: React.FC = () => {
+interface TemplateSelectorProps {
+  isPreviewOnly?: boolean;
+  onSelectAction?: () => void;
+}
+
+const TemplateSelector: React.FC<TemplateSelectorProps> = ({ 
+  isPreviewOnly = false,
+  onSelectAction
+}) => {
   const navigate = useNavigate();
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
 
@@ -61,8 +51,17 @@ const TemplateSelector: React.FC = () => {
     
     // In a real application, you would save the selected template to state or backend
     console.log('Selected template:', selectedTemplate);
-    toast.success('Template selected successfully!');
-    navigate('/dashboard');
+    
+    if (isPreviewOnly && onSelectAction) {
+      onSelectAction();
+    } else {
+      toast.success('Template selected successfully!');
+      navigate('/dashboard');
+    }
+  };
+
+  const handlePreview = (templateId: string) => {
+    navigate(`/preview/${templateId}`);
   };
 
   return (
@@ -74,7 +73,7 @@ const TemplateSelector: React.FC = () => {
         </p>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {templates.map((template) => (
           <TemplateCard
             key={template.id}
@@ -84,19 +83,23 @@ const TemplateSelector: React.FC = () => {
             image={template.image}
             isSelected={selectedTemplate === template.id}
             onSelect={handleSelectTemplate}
+            onPreview={() => handlePreview(template.id)}
+            isPreviewOnly={isPreviewOnly}
           />
         ))}
       </div>
       
-      <div className="mt-12 text-center">
-        <Button
-          onClick={handleContinue}
-          className="bg-wedding-navy hover:bg-wedding-navy/90 text-white px-8 py-6 h-auto text-lg btn-hover-effect"
-          disabled={!selectedTemplate}
-        >
-          Continue with Selected Template
-        </Button>
-      </div>
+      {!isPreviewOnly && (
+        <div className="mt-12 text-center">
+          <Button
+            onClick={handleContinue}
+            className="bg-wedding-navy hover:bg-wedding-navy/90 text-white px-8 py-6 h-auto text-lg btn-hover-effect"
+            disabled={!selectedTemplate}
+          >
+            Continue with Selected Template
+          </Button>
+        </div>
+      )}
     </div>
   );
 };
