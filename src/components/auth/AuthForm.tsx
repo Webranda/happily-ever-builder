@@ -1,18 +1,22 @@
 
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { userStore } from '@/store/userStore';
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { useEffect } from "react";
 
 type AuthMode = 'login' | 'register';
 
 const AuthForm: React.FC = () => {
-  const [mode, setMode] = useState<AuthMode>('register');
+  const location = useLocation();
+  // Parse query string to determine mode
+  const queryParams = new URLSearchParams(location.search);
+  const initialMode = queryParams.get('mode') === 'login' ? 'login' : 'register';
+
+  const [mode, setMode] = useState<AuthMode>(initialMode);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
@@ -29,6 +33,12 @@ const AuthForm: React.FC = () => {
       navigate("/dashboard");
     }
   }, [user, navigate]);
+
+  // If mode from query param changes, update local mode state.
+  useEffect(() => {
+    setMode(queryParams.get('mode') === 'login' ? 'login' : 'register');
+    // eslint-disable-next-line
+  }, [location.search]);
 
   const toggleMode = () => setMode(mode === 'login' ? 'register' : 'login');
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -127,7 +137,15 @@ const AuthForm: React.FC = () => {
         <div className="text-center mt-6">
           <p className="text-sm text-gray-600">
             {mode === 'login' ? "Don't have an account?" : "Already have an account?"}
-            <button type="button" onClick={toggleMode} className="ml-1 text-wedding-navy hover:underline focus:outline-none">
+            <button
+              type="button"
+              onClick={() => {
+                // When toggling, update the query param too for consistency in navigation
+                const param = mode === 'login' ? '' : '?mode=login';
+                navigate(`/auth${param}`);
+              }}
+              className="ml-1 text-wedding-navy hover:underline focus:outline-none"
+            >
               {mode === 'login' ? 'Register' : 'Sign In'}
             </button>
           </p>

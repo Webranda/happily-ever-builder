@@ -22,7 +22,7 @@ const Index = () => {
               </>
             ) : (
               <>
-                <Link to="/auth" className="text-wedding-navy hover:text-wedding-navy/80 font-medium">
+                <Link to="/auth?mode=login" className="text-wedding-navy hover:text-wedding-navy/80 font-medium">
                   Sign In
                 </Link>
                 <Button 
