@@ -1,10 +1,12 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { userStore } from '@/store/userStore';
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useEffect } from "react";
 
 type AuthMode = 'login' | 'register';
 
@@ -15,16 +17,20 @@ const AuthForm: React.FC = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    partner1Name: '',
-    partner2Name: '',
+    firstName: '',
+    lastName: '',
+    avatarUrl: '',
   });
-  
   const navigate = useNavigate();
+  const { user } = useAuth();
 
-  const toggleMode = () => {
-    setMode(mode === 'login' ? 'register' : 'login');
-  };
+  useEffect(() => {
+    if (user) {
+      navigate("/dashboard");
+    }
+  }, [user, navigate]);
 
+  const toggleMode = () => setMode(mode === 'login' ? 'register' : 'login');
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -33,37 +39,41 @@ const AuthForm: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     try {
-      // For demonstration purposes, we'll simulate a successful authentication
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Form validation
       if (!formData.email || !formData.password) {
         throw new Error('Please fill in all required fields');
       }
-      
+
       if (mode === 'register') {
         if (formData.password !== formData.confirmPassword) {
           throw new Error('Passwords do not match');
         }
-        
-        // Save user data to our store
-        userStore.updateData({
+        const { error: signUpError } = await supabase.auth.signUp({
           email: formData.email,
-          partner1Name: formData.partner1Name,
-          partner2Name: formData.partner2Name
+          password: formData.password,
+          options: {
+            data: {
+              first_name: formData.firstName,
+              last_name: formData.lastName,
+              avatar_url: formData.avatarUrl,
+            }
+          }
         });
+        if (signUpError) throw signUpError;
+        toast.success("Account created! Check your email (inbox/spam) to confirm.");
+        setTimeout(() => navigate("/dashboard"), 1000);
+      } else {
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: formData.email,
+          password: formData.password,
+        });
+        if (signInError) throw signInError;
+        toast.success("Welcome back!");
+        setTimeout(() => navigate("/dashboard"), 1000);
       }
-      
-      // In a real app, you would handle authentication with a backend
-      // Simulate successful auth
-      toast.success(mode === 'login' ? 'Welcome back!' : 'Account created! Welcome!');
-      
-      // Navigate to the form page after successful authentication
-      navigate('/wedding-form');
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Authentication failed');
+      toast.error(error instanceof Error ? error.message : String(error));
     } finally {
       setIsLoading(false);
     }
@@ -75,87 +85,40 @@ const AuthForm: React.FC = () => {
         <h2 className="text-2xl font-serif mb-6 text-center">
           {mode === 'login' ? 'Welcome Back' : 'Create Your Account'}
         </h2>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="form-control">
             <label htmlFor="email" className="form-label">Email</label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              placeholder="your@email.com"
-              value={formData.email}
-              onChange={handleChange}
-              className="form-input"
-              required
-            />
+            <Input id="email" name="email" type="email" placeholder="your@email.com"
+              value={formData.email} onChange={handleChange} className="form-input" required />
           </div>
-
           {mode === 'register' && (
             <>
               <div className="form-control">
-                <label htmlFor="partner1Name" className="form-label">Your Name</label>
-                <Input
-                  id="partner1Name"
-                  name="partner1Name"
-                  type="text"
-                  placeholder="e.g. Sarah"
-                  value={formData.partner1Name}
-                  onChange={handleChange}
-                  className="form-input"
-                />
+                <label htmlFor="firstName" className="form-label">First Name</label>
+                <Input id="firstName" name="firstName" type="text" placeholder="e.g. Sarah" value={formData.firstName} onChange={handleChange} className="form-input" />
               </div>
-              
               <div className="form-control">
-                <label htmlFor="partner2Name" className="form-label">Partner's Name</label>
-                <Input
-                  id="partner2Name"
-                  name="partner2Name"
-                  type="text"
-                  placeholder="e.g. Michael"
-                  value={formData.partner2Name}
-                  onChange={handleChange}
-                  className="form-input"
-                />
+                <label htmlFor="lastName" className="form-label">Last Name</label>
+                <Input id="lastName" name="lastName" type="text" placeholder="e.g. Smith" value={formData.lastName} onChange={handleChange} className="form-input" />
+              </div>
+              <div className="form-control">
+                <label htmlFor="avatarUrl" className="form-label">Avatar URL</label>
+                <Input id="avatarUrl" name="avatarUrl" type="url" placeholder="https://your-avatar-url.com" value={formData.avatarUrl} onChange={handleChange} className="form-input" />
               </div>
             </>
           )}
-
           <div className="form-control">
             <label htmlFor="password" className="form-label">Password</label>
-            <Input
-              id="password"
-              name="password"
-              type="password"
-              placeholder="••••••••"
-              value={formData.password}
-              onChange={handleChange}
-              className="form-input"
-              required
-            />
+            <Input id="password" name="password" type="password" placeholder="••••••••" value={formData.password} onChange={handleChange} className="form-input" required />
           </div>
-
           {mode === 'register' && (
             <div className="form-control">
               <label htmlFor="confirmPassword" className="form-label">Confirm Password</label>
-              <Input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                placeholder="••••••••"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                className="form-input"
-                required
-              />
+              <Input id="confirmPassword" name="confirmPassword" type="password" placeholder="••••••••" value={formData.confirmPassword} onChange={handleChange} className="form-input" required />
             </div>
           )}
-          
-          <Button 
-            type="submit" 
-            className="w-full bg-wedding-navy hover:bg-wedding-navy/90 text-white btn-hover-effect"
-            disabled={isLoading}
-          >
+          <Button type="submit" className="w-full bg-wedding-navy hover:bg-wedding-navy/90 text-white btn-hover-effect" disabled={isLoading}>
             {isLoading ? (
               <span className="flex items-center justify-center">
                 <span className="loader mr-2"></span>
@@ -166,15 +129,10 @@ const AuthForm: React.FC = () => {
             )}
           </Button>
         </form>
-        
         <div className="text-center mt-6">
           <p className="text-sm text-gray-600">
             {mode === 'login' ? "Don't have an account?" : "Already have an account?"}
-            <button
-              type="button"
-              onClick={toggleMode}
-              className="ml-1 text-wedding-navy hover:underline focus:outline-none"
-            >
+            <button type="button" onClick={toggleMode} className="ml-1 text-wedding-navy hover:underline focus:outline-none">
               {mode === 'login' ? 'Register' : 'Sign In'}
             </button>
           </p>

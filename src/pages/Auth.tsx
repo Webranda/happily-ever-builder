@@ -1,11 +1,22 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import Container from '@/components/ui/Container';
 import Logo from '@/components/ui/Logo';
 import AuthForm from '@/components/auth/AuthForm';
+import { useAuth } from '@/hooks/useAuth';
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Auth = () => {
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loading && user) {
+      navigate("/dashboard");
+    }
+  }, [user, loading, navigate]);
+
   return (
     <div className="min-h-screen w-full bg-gradient-to-b from-wedding-cream/50 to-white">
       {/* Header */}
