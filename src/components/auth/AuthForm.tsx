@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -19,7 +20,6 @@ const AuthForm: React.FC = () => {
     confirmPassword: '',
     firstName: '',
     lastName: '',
-    avatarUrl: '',
   });
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -56,7 +56,6 @@ const AuthForm: React.FC = () => {
             data: {
               first_name: formData.firstName,
               last_name: formData.lastName,
-              avatar_url: formData.avatarUrl,
             }
           }
         });
@@ -101,10 +100,6 @@ const AuthForm: React.FC = () => {
               <div className="form-control">
                 <label htmlFor="lastName" className="form-label">Last Name</label>
                 <Input id="lastName" name="lastName" type="text" placeholder="e.g. Smith" value={formData.lastName} onChange={handleChange} className="form-input" />
-              </div>
-              <div className="form-control">
-                <label htmlFor="avatarUrl" className="form-label">Avatar URL</label>
-                <Input id="avatarUrl" name="avatarUrl" type="url" placeholder="https://your-avatar-url.com" value={formData.avatarUrl} onChange={handleChange} className="form-input" />
               </div>
             </>
           )}

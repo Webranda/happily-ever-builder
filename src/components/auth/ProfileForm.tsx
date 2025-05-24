@@ -9,7 +9,6 @@ interface ProfileFormProps {
   initial?: {
     first_name?: string;
     last_name?: string;
-    avatar_url?: string;
   };
   onSaved?: () => void;
 }
@@ -17,7 +16,6 @@ interface ProfileFormProps {
 const ProfileForm: React.FC<ProfileFormProps> = ({ initial = {}, onSaved }) => {
   const [firstName, setFirstName] = useState(initial.first_name || "");
   const [lastName, setLastName] = useState(initial.last_name || "");
-  const [avatarUrl, setAvatarUrl] = useState(initial.avatar_url || "");
   const [loading, setLoading] = useState(false);
 
   const handleSave = async (e: React.FormEvent) => {
@@ -37,8 +35,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initial = {}, onSaved }) => {
       .from("profiles")
       .update({
         first_name: firstName,
-        last_name: lastName,
-        avatar_url: avatarUrl
+        last_name: lastName
       })
       .eq("id", id);
 
@@ -60,10 +57,6 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ initial = {}, onSaved }) => {
       <div>
         <label className="form-label">Last Name</label>
         <Input value={lastName} onChange={e => setLastName(e.target.value)} />
-      </div>
-      <div>
-        <label className="form-label">Avatar URL</label>
-        <Input type="url" value={avatarUrl} onChange={e => setAvatarUrl(e.target.value)} />
       </div>
       <Button type="submit" className="w-full" disabled={loading}>
         {loading ? "Saving..." : "Save Profile"}
