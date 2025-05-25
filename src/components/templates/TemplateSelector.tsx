@@ -1,9 +1,11 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import TemplateCard from './TemplateCard';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 // Reduced template data to 3
 const templates = [
@@ -32,32 +34,63 @@ interface TemplateSelectorProps {
   onSelectAction?: () => void;
 }
 
-const TemplateSelector: React.FC<TemplateSelectorProps> = ({ 
+const TemplateSelector: React.FC<TemplateSelectorProps> = ({
   isPreviewOnly = false,
   onSelectAction
 }) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  // On mount, fetch user's selected template if any
+  useEffect(() => {
+    async function fetchTemplate() {
+      if (user?.id) {
+        const { data: weddingSite } = await supabase
+          .from('wedding_sites')
+          .select('template_id')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        if (weddingSite && weddingSite.template_id) {
+          setSelectedTemplate(weddingSite.template_id);
+        }
+      }
+    }
+    fetchTemplate();
+  }, [user]);
 
   const handleSelectTemplate = (id: string) => {
     setSelectedTemplate(id);
-    
     if (isPreviewOnly && onSelectAction) {
       onSelectAction();
     }
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (!selectedTemplate) {
       toast.error('Please select a template to continue');
       return;
     }
-    
-    // In a real application, you would save the selected template to state or backend
-    console.log('Selected template:', selectedTemplate);
-    
-    toast.success('Template selected successfully!');
-    navigate('/dashboard');
+    if (!user?.id) {
+      toast.error('You must be signed in.');
+      return;
+    }
+    setLoading(true);
+    try {
+      // Upsert template_id for user's wedding_site
+      let { error } = await supabase
+        .from('wedding_sites')
+        .update({ template_id: selectedTemplate })
+        .eq('user_id', user.id);
+      if (error) throw error;
+      toast.success('Template selected successfully!');
+      navigate('/photo-gallery');
+    } catch (err: any) {
+      toast.error(err.message || "Failed to save template.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handlePreview = (templateId: string) => {
@@ -72,7 +105,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
           Select a beautiful template for your wedding website. You can preview each one before making your selection.
         </p>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {templates.map((template) => (
           <TemplateCard
@@ -88,15 +121,15 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
           />
         ))}
       </div>
-      
+
       {!isPreviewOnly && (
         <div className="mt-12 text-center">
           <Button
             onClick={handleContinue}
             className="bg-wedding-navy hover:bg-wedding-navy/90 text-white px-8 py-6 h-auto text-lg btn-hover-effect"
-            disabled={!selectedTemplate}
+            disabled={!selectedTemplate || loading}
           >
-            Continue with Selected Template
+            {loading ? "Saving..." : "Continue with Selected Template"}
           </Button>
         </div>
       )}

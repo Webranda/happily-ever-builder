@@ -10,6 +10,8 @@ import { Calendar as CalendarIcon } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { toast } from 'sonner';
 import { userStore } from '@/store/userStore';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from "@/hooks/useAuth";
 
 interface FormSection {
   id: string;
@@ -19,8 +21,14 @@ interface FormSection {
 
 const WeddingDetailsForm: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(0);
   const [date, setDate] = useState<Date | undefined>(undefined);
+  const [loading, setLoading] = useState(false);
+
+  // Add a state to keep wedding_site id for updates
+  const [siteId, setSiteId] = useState<string | null>(null);
+
   const [formData, setFormData] = useState({
     // Couple details
     partner1Name: '',
@@ -39,7 +47,8 @@ const WeddingDetailsForm: React.FC = () => {
     accommodationInfo: '',
     additionalNotes: '',
   });
-  
+
+  // Prefill form with existing wedding data
   useEffect(() => {
     const userData = userStore.getData();
     if (userData.partner1Name || userData.partner2Name) {
@@ -49,8 +58,42 @@ const WeddingDetailsForm: React.FC = () => {
         partner2Name: userData.partner2Name || prev.partner2Name,
       }));
     }
-  }, []);
-  
+
+    // Load saved data from Supabase for this user (if available)
+    async function loadWeddingSite() {
+      if (user?.id) {
+        const { data: weddingSite } = await supabase
+          .from('wedding_sites')
+          .select('*')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (weddingSite) {
+          setSiteId(weddingSite.id);
+          setFormData({
+            partner1Name: weddingSite.partner1_name,
+            partner2Name: weddingSite.partner2_name,
+            coupleStory: weddingSite.couple_story || '',
+            eventDate: weddingSite.event_date,
+            venueName: weddingSite.venue_name,
+            venueAddress: weddingSite.venue_address || '',
+            eventTime: weddingSite.event_time || '',
+            receptionTime: weddingSite.reception_time || '',
+            registryLink: weddingSite.registry_link || '',
+            accommodationInfo: weddingSite.accommodation_info || '',
+            additionalNotes: weddingSite.additional_notes || '',
+          });
+          if (weddingSite.event_date) {
+            try {
+              setDate(new Date(weddingSite.event_date));
+            } catch {}
+          }
+        }
+      }
+    }
+    loadWeddingSite();
+  }, [user]);
+
   const sections: FormSection[] = [
     {
       id: 'couple',
@@ -82,35 +125,63 @@ const WeddingDetailsForm: React.FC = () => {
     if (selectedDate) {
       setFormData(prev => ({
         ...prev,
-        eventDate: format(selectedDate, 'PPP')
+        eventDate: format(selectedDate, 'yyyy-MM-dd')
       }));
     }
   };
 
-  const nextStep = () => {
+  const nextStep = async () => {
     if (currentStep < sections.length - 1) {
       // Simple validation
       if (currentStep === 0 && (!formData.partner1Name || !formData.partner2Name)) {
         toast.error("Please enter both partner names to continue");
         return;
       }
-      
+
       if (currentStep === 1 && (!formData.eventDate || !formData.venueName)) {
         toast.error("Please enter the event date and venue to continue");
         return;
       }
-      
+
       setCurrentStep(prev => prev + 1);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
       // Submit the form
-      console.log('Form submitted:', formData);
-      
-      // Save the wedding details to localStorage for template population
-      localStorage.setItem('weddingDetails', JSON.stringify(formData));
-      
-      toast.success('Wedding details saved successfully!');
-      navigate('/template-selection');
+      if (!user?.id) {
+        toast.error("You must be signed in.");
+        return;
+      }
+      setLoading(true);
+      try {
+        // Upsert (insert or update) wedding_site
+        const payload = {
+          partner1_name: formData.partner1Name,
+          partner2_name: formData.partner2Name,
+          couple_story: formData.coupleStory,
+          event_date: formData.eventDate,
+          venue_name: formData.venueName,
+          venue_address: formData.venueAddress,
+          event_time: formData.eventTime,
+          reception_time: formData.receptionTime,
+          registry_link: formData.registryLink,
+          accommodation_info: formData.accommodationInfo,
+          additional_notes: formData.additionalNotes,
+          user_id: user.id,
+        };
+        let { error, data } = await supabase
+          .from('wedding_sites')
+          .upsert(siteId ? [{ ...payload, id: siteId }] : [payload], { onConflict: 'user_id' })
+          .select()
+          .maybeSingle();
+        if (error) throw error;
+        if (data && data.id) setSiteId(data.id);
+        toast.success('Wedding details saved successfully!');
+        navigate('/template-selection');
+      } catch (err: any) {
+        toast.error(err.message || "Failed to save details.");
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -331,7 +402,7 @@ const WeddingDetailsForm: React.FC = () => {
             type="button"
             variant="outline"
             onClick={prevStep}
-            disabled={currentStep === 0}
+            disabled={currentStep === 0 || loading}
             className="border-wedding-navy text-wedding-navy hover:bg-wedding-navy/5"
           >
             Previous
@@ -341,8 +412,13 @@ const WeddingDetailsForm: React.FC = () => {
             type="button"
             onClick={nextStep}
             className="bg-wedding-navy hover:bg-wedding-navy/90 text-white btn-hover-effect"
+            disabled={loading}
           >
-            {currentStep === sections.length - 1 ? 'Save & Continue' : 'Next'}
+            {loading
+              ? 'Saving...'
+              : currentStep === sections.length - 1
+                ? 'Save & Continue'
+                : 'Next'}
           </Button>
         </div>
       </div>

@@ -36,6 +36,63 @@ export type Database = {
         }
         Relationships: []
       }
+      wedding_sites: {
+        Row: {
+          accommodation_info: string | null
+          additional_notes: string | null
+          couple_story: string | null
+          created_at: string | null
+          event_date: string
+          event_time: string | null
+          id: string
+          partner1_name: string
+          partner2_name: string
+          reception_time: string | null
+          registry_link: string | null
+          template_id: string | null
+          updated_at: string | null
+          user_id: string
+          venue_address: string | null
+          venue_name: string
+        }
+        Insert: {
+          accommodation_info?: string | null
+          additional_notes?: string | null
+          couple_story?: string | null
+          created_at?: string | null
+          event_date: string
+          event_time?: string | null
+          id?: string
+          partner1_name: string
+          partner2_name: string
+          reception_time?: string | null
+          registry_link?: string | null
+          template_id?: string | null
+          updated_at?: string | null
+          user_id: string
+          venue_address?: string | null
+          venue_name: string
+        }
+        Update: {
+          accommodation_info?: string | null
+          additional_notes?: string | null
+          couple_story?: string | null
+          created_at?: string | null
+          event_date?: string
+          event_time?: string | null
+          id?: string
+          partner1_name?: string
+          partner2_name?: string
+          reception_time?: string | null
+          registry_link?: string | null
+          template_id?: string | null
+          updated_at?: string | null
+          user_id?: string
+          venue_address?: string | null
+          venue_name?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
