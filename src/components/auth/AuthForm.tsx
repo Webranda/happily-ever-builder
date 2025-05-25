@@ -8,6 +8,16 @@ import { userStore } from '@/store/userStore';
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Eye, EyeOff } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogTrigger,
+  DialogClose,
+} from '@/components/ui/dialog';
 
 type AuthMode = 'login' | 'register';
 
@@ -30,6 +40,12 @@ const AuthForm: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
+
+  // State for forgot password dialog
+  const [showForgot, setShowForgot] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotError, setForgotError] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -105,6 +121,34 @@ const AuthForm: React.FC = () => {
     }
   };
 
+  // Handle forgot password submission
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setForgotError(null);
+    setForgotLoading(true);
+    try {
+      if (!forgotEmail) {
+        setForgotError("Please enter your email.");
+        setForgotLoading(false);
+        return;
+      }
+      const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
+        redirectTo: window.location.origin + "/auth?mode=login"
+      });
+      if (error) {
+        setForgotError(error.message);
+        throw error;
+      }
+      toast.success("Password reset email sent! Check your inbox (or spam).");
+      setShowForgot(false);
+      setForgotEmail('');
+    } catch (err) {
+      // forgotError is already set
+    } finally {
+      setForgotLoading(false);
+    }
+  };
+
   return (
     <div className="w-full max-w-md mx-auto">
       <div className="glass-card rounded-xl p-6 md:p-8 animate-scale-in">
@@ -155,6 +199,59 @@ const AuthForm: React.FC = () => {
             </div>
             {formError && (
               <div className="mt-2 text-sm text-red-600">{formError}</div>
+            )}
+            {mode === 'login' && (
+              <div className="mt-2 flex justify-end">
+                {/* Dialog for forgot password */}
+                <Dialog open={showForgot} onOpenChange={setShowForgot}>
+                  <DialogTrigger asChild>
+                    <button
+                      type="button"
+                      className="text-xs text-wedding-navy hover:underline focus:outline-none"
+                      tabIndex={0}
+                    >
+                      Forgot password?
+                    </button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Reset your password</DialogTitle>
+                      <DialogDescription>
+                        Enter your email and we'll send you a password reset link.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleForgotPassword} className="space-y-3">
+                      <div>
+                        <label htmlFor="forgot-email" className="form-label">Email</label>
+                        <Input
+                          id="forgot-email"
+                          type="email"
+                          value={forgotEmail}
+                          placeholder="your@email.com"
+                          onChange={e => {
+                            setForgotEmail(e.target.value);
+                            setForgotError(null);
+                          }}
+                          required
+                        />
+                      </div>
+                      {forgotError && (
+                        <div className="text-sm text-red-600">{forgotError}</div>
+                      )}
+                      <DialogFooter>
+                        <Button type="submit" disabled={forgotLoading} className="w-full bg-wedding-navy text-white">
+                          {forgotLoading ? "Sending reset link..." : "Send reset link"}
+                        </Button>
+                        <DialogClose asChild>
+                          <Button type="button" variant="outline" className="w-full mt-1">
+                            Cancel
+                          </Button>
+                        </DialogClose>
+                      </DialogFooter>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+              </div>
             )}
           </div>
           {mode === 'register' && (
