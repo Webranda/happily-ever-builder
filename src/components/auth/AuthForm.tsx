@@ -18,6 +18,7 @@ const AuthForm: React.FC = () => {
 
   const [mode, setMode] = useState<AuthMode>(initialMode);
   const [isLoading, setIsLoading] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -44,20 +45,26 @@ const AuthForm: React.FC = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    setFormError(null); // clear error when user edits an input
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError(null);
     setIsLoading(true);
 
     try {
       if (!formData.email || !formData.password) {
-        throw new Error('Please fill in all required fields');
+        setFormError('Please fill in all required fields');
+        setIsLoading(false);
+        return;
       }
 
       if (mode === 'register') {
         if (formData.password !== formData.confirmPassword) {
-          throw new Error('Passwords do not match');
+          setFormError('Passwords do not match');
+          setIsLoading(false);
+          return;
         }
         const { error: signUpError } = await supabase.auth.signUp({
           email: formData.email,
@@ -69,7 +76,10 @@ const AuthForm: React.FC = () => {
             }
           }
         });
-        if (signUpError) throw signUpError;
+        if (signUpError) {
+          setFormError(signUpError.message);
+          throw signUpError;
+        }
         toast.success("Account created! Check your email (inbox/spam) to confirm.");
         setTimeout(() => navigate("/dashboard"), 1000);
       } else {
@@ -77,11 +87,16 @@ const AuthForm: React.FC = () => {
           email: formData.email,
           password: formData.password,
         });
-        if (signInError) throw signInError;
+        if (signInError) {
+          setFormError('Incorrect email or password. Please try again.');
+          throw signInError;
+        }
         toast.success("Welcome back!");
         setTimeout(() => navigate("/dashboard"), 1000);
       }
     } catch (error) {
+      // Error is already set in formError and toast
+      if (error instanceof Error && !formError) setFormError(error.message);
       toast.error(error instanceof Error ? error.message : String(error));
     } finally {
       setIsLoading(false);
@@ -116,6 +131,9 @@ const AuthForm: React.FC = () => {
           <div className="form-control">
             <label htmlFor="password" className="form-label">Password</label>
             <Input id="password" name="password" type="password" placeholder="••••••••" value={formData.password} onChange={handleChange} className="form-input" required />
+            {formError && (
+              <div className="mt-2 text-sm text-red-600">{formError}</div>
+            )}
           </div>
           {mode === 'register' && (
             <div className="form-control">
