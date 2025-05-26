@@ -141,10 +141,12 @@ const PhotoGallery = () => {
         }
       }
       // Save image URL array in DB
+      // Ensure .update() includes user_id for RLS and .select() is used
       let { error } = await supabase
         .from('wedding_sites')
-        .update({ images: imageUrls })
-        .eq('user_id', user.id);
+        .update({ images: imageUrls, user_id: user.id })
+        .eq('user_id', user.id)
+        .select();
       if (error) throw error;
       toast.success("Gallery saved and images uploaded!");
     } catch (err: any) {
@@ -225,7 +227,7 @@ const PhotoGallery = () => {
 
                 <Button
                   type="button"
-                  className="bg-wedding-navy hover:bg-wedding-navy/90"
+                  className="bg-wedding-navy hover:bg-wedding-navy/90 text-white"
                   onClick={() => document.getElementById('photo-upload')?.click()}
                   disabled={uploadedImages.length >= MAX_IMAGES}
                 >
