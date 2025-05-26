@@ -45,6 +45,7 @@ export type Database = {
           event_date: string
           event_time: string | null
           id: string
+          images: string[] | null
           partner1_name: string
           partner2_name: string
           reception_time: string | null
@@ -63,6 +64,7 @@ export type Database = {
           event_date: string
           event_time?: string | null
           id?: string
+          images?: string[] | null
           partner1_name: string
           partner2_name: string
           reception_time?: string | null
@@ -81,6 +83,7 @@ export type Database = {
           event_date?: string
           event_time?: string | null
           id?: string
+          images?: string[] | null
           partner1_name?: string
           partner2_name?: string
           reception_time?: string | null

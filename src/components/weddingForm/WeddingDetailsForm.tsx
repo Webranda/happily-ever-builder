@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -153,8 +154,8 @@ const WeddingDetailsForm: React.FC = () => {
       }
       setLoading(true);
       try {
-        // Upsert (insert or update) wedding_site
-        const payload = {
+        // Build the payload for the upsert
+        const payload: any = {
           partner1_name: formData.partner1Name,
           partner2_name: formData.partner2Name,
           couple_story: formData.coupleStory,
@@ -168,11 +169,17 @@ const WeddingDetailsForm: React.FC = () => {
           additional_notes: formData.additionalNotes,
           user_id: user.id,
         };
+        if (siteId) {
+          payload.id = siteId;
+        }
+
+        // upsert expects an array of row objects
         let { error, data } = await supabase
           .from('wedding_sites')
-          .upsert(siteId ? [{ ...payload, id: siteId }] : [payload], { onConflict: 'user_id' })
+          .upsert([payload])
           .select()
           .maybeSingle();
+
         if (error) throw error;
         if (data && data.id) setSiteId(data.id);
         toast.success('Wedding details saved successfully!');

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Container from '@/components/ui/Container';
@@ -23,14 +24,18 @@ const PhotoGallery = () => {
     async function fetchImages() {
       if (!user?.id) return;
       // We stored image paths in wedding_sites table (images column)
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('wedding_sites')
         .select('images')
         .eq('user_id', user.id)
         .maybeSingle();
-      if (data && data.images && Array.isArray(data.images)) {
+      if (error) {
+        toast.error(error.message || "Failed to load images");
+        return;
+      }
+      if (data && Array.isArray(data.images)) {
         // Map { url } to uploadedImages state format
-        setUploadedImages(data.images.map((url: string) => ({ preview: url, url })));
+        setUploadedImages((data.images as string[]).map((url: string) => ({ preview: url, url })));
       }
     }
     fetchImages();
