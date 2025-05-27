@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Container from '@/components/ui/Container';
@@ -23,7 +22,7 @@ const PhotoGallery = () => {
   useEffect(() => {
     async function fetchImages() {
       if (!user?.id) return;
-      // We stored image paths in wedding_sites table (images column)
+      // Fetch row for this user to check if row exists
       const { data, error } = await supabase
         .from('wedding_sites')
         .select('images')
@@ -34,7 +33,6 @@ const PhotoGallery = () => {
         return;
       }
       if (data && Array.isArray(data.images)) {
-        // Map { url } to uploadedImages state format
         setUploadedImages((data.images as string[]).map((url: string) => ({ preview: url, url })));
       }
     }
@@ -69,13 +67,11 @@ const PhotoGallery = () => {
     let imagesToAdd: { file: File; preview: string }[] = [];
     let error = false;
     for (const file of files) {
-      // Validate file type
       if (!ALLOWED_FILE_TYPES.includes(file.type)) {
         toast.error(`${file.name} is not a supported image format`);
         error = true;
         continue;
       }
-      // Validate file size
       if (file.size > MAX_FILE_SIZE) {
         toast.error(`${file.name} exceeds the maximum file size of 25MB`);
         error = true;
@@ -101,13 +97,17 @@ const PhotoGallery = () => {
     setUploadedImages(prev => {
       const newImages = [...prev];
       if (newImages[index]?.preview?.startsWith('blob:')) {
-        URL.revokeObjectURL(newImages[index].preview); // Free memory
+        URL.revokeObjectURL(newImages[index].preview);
       }
       newImages.splice(index, 1);
       return newImages;
     });
   };
 
+  /**
+   * Ensure RLS: The logged in user can always update their row. 
+   * If the user does not have a row in `wedding_sites`, create one.
+   */
   const handleSaveGallery = async () => {
     if (!user?.id) {
       toast.error("You must be signed in.");
@@ -115,14 +115,11 @@ const PhotoGallery = () => {
     }
     setLoading(true);
     try {
-      // Upload new files to Supabase, leave already-uploaded images (url) unchanged
       let imageUrls: string[] = [];
       for (const img of uploadedImages) {
         if (img.url) {
-          // Already uploaded
           imageUrls.push(img.url);
         } else if (img.file) {
-          // Upload file
           const fileExt = img.file.name.split('.').pop();
           const fileName = `${user.id}/${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
           const { error: uploadError } = await supabase
@@ -130,8 +127,6 @@ const PhotoGallery = () => {
             .from('wedding-photos')
             .upload(fileName, img.file, { upsert: false });
           if (uploadError) throw uploadError;
-
-          // Get public URL
           const { data: urlData } = supabase
             .storage
             .from('wedding-photos')
@@ -140,16 +135,53 @@ const PhotoGallery = () => {
           imageUrls.push(urlData.publicUrl);
         }
       }
-      // Save image URL array in DB
-      // Ensure .update() includes user_id for RLS and .select() is used
-      let { error } = await supabase
+
+      // 1. Check if row for this user exists
+      const { data: existingRow, error: checkError } = await supabase
         .from('wedding_sites')
-        .update({ images: imageUrls, user_id: user.id })
+        .select('id')
         .eq('user_id', user.id)
-        .select();
+        .maybeSingle();
+
+      if (checkError) {
+        console.error('Check error:', checkError);
+        toast.error(checkError.message || "Failed to check user wedding site.");
+        setLoading(false);
+        return;
+      }
+
+      let error;
+      // If row exists, update. If not, insert with required dummy/default data.
+      if (existingRow) {
+        ({ error } = await supabase
+          .from('wedding_sites')
+          .update({ images: imageUrls })
+          .eq('user_id', user.id)
+          .select());
+        console.log('Tried updating wedding_sites, error:', error);
+      } else {
+        // Required fields for insert
+        const requiredDefaults = {
+          partner1_name: "Partner 1",
+          partner2_name: "Partner 2",
+          event_date: "TBD", // Should be updated by user elsewhere
+          venue_name: "TBD"
+        };
+        ({ error } = await supabase
+          .from('wedding_sites')
+          .insert({
+            user_id: user.id,
+            images: imageUrls,
+            ...requiredDefaults
+          })
+          .select());
+        console.log('Inserted new wedding_sites row, error:', error);
+      }
+
       if (error) throw error;
       toast.success("Gallery saved and images uploaded!");
     } catch (err: any) {
+      console.error('Unhandled error while saving gallery:', err);
       toast.error(err.message || "Failed to save gallery.");
     } finally {
       setLoading(false);
