@@ -25,6 +25,7 @@ export function usePhotoGallery() {
         .eq('user_id', user.id)
         .maybeSingle();
       if (error) {
+        console.error("Fetch Images Error:", error);
         toast.error(error.message || "Failed to load images");
         return;
       }
@@ -85,6 +86,7 @@ export function usePhotoGallery() {
       return;
     }
     setLoading(true);
+
     try {
       let imageUrls: string[] = [];
       for (const img of uploadedImages) {
@@ -97,7 +99,10 @@ export function usePhotoGallery() {
             .storage
             .from('wedding-photos')
             .upload(fileName, img.file, { upsert: false });
-          if (uploadError) throw uploadError;
+          if (uploadError) {
+            console.error("Supabase Storage Upload Error:", uploadError);
+            throw uploadError;
+          }
           const { data: urlData } = supabase
             .storage
             .from('wedding-photos')
@@ -112,39 +117,57 @@ export function usePhotoGallery() {
         .select('id')
         .eq('user_id', user.id)
         .maybeSingle();
-
       if (checkError) {
+        console.error("Check wedding_site row error: ", checkError);
         toast.error(checkError.message || "Failed to check user wedding site.");
         setLoading(false);
         return;
       }
 
       let error: any;
-      if (existingRow) {
-        ({ error } = await supabase
+      if (existingRow && existingRow.id) {
+        // Ensure correct user_id in update condition!
+        console.log("Updating wedding_site for user_id:", user.id, " - Row id:", existingRow.id);
+        const { error: updateError, data: updateData } = await supabase
           .from('wedding_sites')
-          .update({ images: imageUrls })
+          .update({ images: imageUrls, user_id: user.id })
           .eq('user_id', user.id)
-          .select());
+          .select();
+        if (updateError) {
+          console.error("Update Error:", updateError);
+          throw updateError;
+        }
+        if (!updateData || updateData.length === 0) {
+          throw new Error("Update did not affect any rows.");
+        }
       } else {
+        // Insert new site: must include user_id!
         const requiredDefaults = {
           partner1_name: "Partner 1",
           partner2_name: "Partner 2",
           event_date: "TBD",
           venue_name: "TBD"
         };
-        ({ error } = await supabase
+        console.log("Inserting new wedding_site for user_id:", user.id);
+        const { error: insertError, data: insertData } = await supabase
           .from('wedding_sites')
           .insert({
             user_id: user.id,
             images: imageUrls,
             ...requiredDefaults
           })
-          .select());
+          .select();
+        if (insertError) {
+          console.error("Insert Error:", insertError);
+          throw insertError;
+        }
+        if (!insertData || insertData.length === 0) {
+          throw new Error("Insert did not affect any rows.");
+        }
       }
-      if (error) throw error;
       toast.success("Gallery saved and images uploaded!");
     } catch (err: any) {
+      console.error("saveGallery catch:", err);
       toast.error(err.message || "Failed to save gallery.");
     } finally {
       setLoading(false);
