@@ -124,15 +124,21 @@ export function usePhotoGallery() {
           const fileExt = img.file.name.split('.').pop();
           const fileName = `${user.id}/${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${fileExt}`;
           
-          console.log("Uploading file:", fileName);
-          const { error: uploadError } = await supabase.storage
+          console.log("Uploading file:", fileName, "File size:", img.file.size, "File type:", img.file.type);
+          
+          const { data: uploadData, error: uploadError } = await supabase.storage
             .from('wedding-photos')
-            .upload(fileName, img.file, { upsert: false });
+            .upload(fileName, img.file, { 
+              upsert: false,
+              contentType: img.file.type
+            });
           
           if (uploadError) {
             console.error("Storage upload error:", uploadError);
             throw new Error(`Failed to upload ${img.file.name}: ${uploadError.message}`);
           }
+          
+          console.log("Upload successful:", uploadData);
           
           const { data: urlData } = supabase.storage
             .from('wedding-photos')
@@ -142,6 +148,7 @@ export function usePhotoGallery() {
             throw new Error(`Failed to get public URL for ${img.file.name}`);
           }
           
+          console.log("Got public URL:", urlData.publicUrl);
           imageUrls.push(urlData.publicUrl);
         }
       }
@@ -193,6 +200,13 @@ export function usePhotoGallery() {
       }
 
       console.log("Gallery saved successfully");
+      
+      // Update local state to reflect saved images
+      setUploadedImages(prev => prev.map(img => ({
+        ...img,
+        url: img.url || imageUrls[uploadedImages.findIndex(i => i === img)]
+      })));
+      
       toast.success("Gallery saved successfully!");
       
     } catch (err: any) {
