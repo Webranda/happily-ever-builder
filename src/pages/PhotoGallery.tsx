@@ -16,16 +16,19 @@ const PhotoGallery = () => {
     addFiles,
     saveGallery,
     loading,
+    user,
   } = usePhotoGallery();
+
+  const hasUnsavedChanges = uploadedImages.some(img => img.file && !img.url);
 
   return (
     <div className="min-h-screen w-full bg-white">
       {/* Header */}
       <header className="w-full py-4 px-6 shadow-soft backdrop-blur-sm bg-white/80 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <Link to="/" className="inline-block">
+          <div className="inline-block">
             <Logo size="md" />
-          </Link>
+          </div>
 
           <Button
             variant="ghost"
@@ -59,27 +62,50 @@ const PhotoGallery = () => {
               <p className="text-gray-600 max-w-2xl mx-auto animate-fade-in">
                 Upload and manage photos for your wedding website gallery
               </p>
+              {!user && (
+                <p className="text-red-600 mt-2">Please sign in to manage your photo gallery</p>
+              )}
             </div>
           </div>
 
-          <div className="mb-8">
-            <PhotoUploader onAddFiles={addFiles} disabled={uploadedImages.length >= MAX_IMAGES} />
-          </div>
-
-          {uploadedImages.length > 0 && (
-            <div className="mt-10">
-              <h2 className="text-2xl mb-4">Uploaded Photos</h2>
-              <PhotoGrid images={uploadedImages} onRemove={removeImage} />
-              <div className="mt-6 text-center">
-                <Button
-                  className="bg-wedding-gold hover:bg-wedding-gold/90 text-white"
-                  onClick={saveGallery}
-                  disabled={loading}
-                >
-                  {loading ? "Uploading..." : "Save Gallery"}
-                </Button>
+          {user && (
+            <>
+              <div className="mb-8">
+                <PhotoUploader 
+                  onAddFiles={addFiles} 
+                  disabled={uploadedImages.length >= MAX_IMAGES}
+                  currentImageCount={uploadedImages.length}
+                />
               </div>
-            </div>
+
+              {uploadedImages.length > 0 && (
+                <div className="mt-10">
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-2xl">Your Photos ({uploadedImages.length}/{MAX_IMAGES})</h2>
+                    {hasUnsavedChanges && (
+                      <span className="text-sm text-orange-600 bg-orange-50 px-2 py-1 rounded">
+                        You have unsaved changes
+                      </span>
+                    )}
+                  </div>
+                  <PhotoGrid images={uploadedImages} onRemove={removeImage} />
+                  <div className="mt-6 text-center">
+                    <Button
+                      className="bg-wedding-gold hover:bg-wedding-gold/90 text-white disabled:bg-gray-400"
+                      onClick={saveGallery}
+                      disabled={loading || !user}
+                    >
+                      {loading ? "Saving..." : "Save Gallery"}
+                    </Button>
+                    {hasUnsavedChanges && (
+                      <p className="text-sm text-gray-600 mt-2">
+                        Click "Save Gallery" to upload your new photos
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </Container>
       </main>
