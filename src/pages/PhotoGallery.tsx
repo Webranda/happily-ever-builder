@@ -107,6 +107,15 @@ const PhotoGallery = () => {
               )}
             </>
           )}
+
+          {!user && (
+            <div className="text-center">
+              <p className="text-gray-600 mb-4">Please sign in to access your photo gallery</p>
+              <Button asChild>
+                <Link to="/auth">Sign In</Link>
+              </Button>
+            </div>
+          )}
         </Container>
       </main>
 
