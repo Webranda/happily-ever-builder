@@ -171,7 +171,7 @@ export function usePhotoGallery() {
         console.log("Updating existing wedding site:", existingRow.id);
         const { error: updateError } = await supabase
           .from('wedding_sites')
-          .update({ images: imageUrls }, { returning: 'minimal' })
+          .update({ images: imageUrls })
           .eq('user_id', user.id);
 
         if (updateError) {
@@ -190,7 +190,7 @@ export function usePhotoGallery() {
             partner2_name: "Partner 2", 
             event_date: "TBD",
             venue_name: "TBD"
-          }, { returning: 'minimal' });
+          });
 
         if (insertError) {
           console.error("Insert error:", insertError);
