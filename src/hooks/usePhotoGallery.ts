@@ -1,9 +1,8 @@
 
-import { toast } from "sonner";
 import { usePhotoGalleryState } from './photo-gallery/usePhotoGalleryState';
 import { usePhotoGalleryFetch } from './photo-gallery/usePhotoGalleryFetch';
 import { usePhotoGallerySave } from './photo-gallery/usePhotoGallerySave';
-import { validateAndProcessFiles } from './photo-gallery/fileValidation';
+import { usePhotoGalleryFiles } from './photo-gallery/usePhotoGalleryFiles';
 
 export { MAX_FILE_SIZE, ALLOWED_FILE_TYPES, MAX_IMAGES } from './photo-gallery/constants';
 
@@ -13,7 +12,6 @@ export function usePhotoGallery() {
     setUploadedImages,
     loading,
     setLoading,
-    removeImage,
   } = usePhotoGalleryState();
 
   const { user } = usePhotoGalleryFetch(setUploadedImages);
@@ -25,14 +23,10 @@ export function usePhotoGallery() {
     user?.id
   );
 
-  // Add images with validation
-  const addFiles = (files: File[]) => {
-    const imagesToAdd = validateAndProcessFiles(files, uploadedImages.length);
-    
-    if (imagesToAdd.length > 0) {
-      setUploadedImages(prev => [...prev, ...imagesToAdd]);
-    }
-  };
+  const { addFiles, removeImage } = usePhotoGalleryFiles(
+    uploadedImages,
+    setUploadedImages
+  );
 
   return {
     uploadedImages,
