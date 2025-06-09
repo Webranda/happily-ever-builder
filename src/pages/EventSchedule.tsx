@@ -1,10 +1,9 @@
-
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Container from '@/components/ui/Container';
 import Logo from '@/components/ui/Logo';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, Calendar, Plus, Clock, MapPin, Trash2 } from 'lucide-react';
+import { ChevronLeft, Calendar, Plus, Clock, MapPin, Trash2, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface EventItem {
@@ -17,6 +16,7 @@ interface EventItem {
 }
 
 const EventSchedule = () => {
+  const navigate = useNavigate();
   const [events, setEvents] = useState<EventItem[]>([
     {
       id: '1',
@@ -77,6 +77,12 @@ const EventSchedule = () => {
     toast.success('Event removed');
   };
 
+  const handlePreviewWebsite = () => {
+    // Navigate to template preview - using 'elegant' as default template
+    // In a real app, this would use the user's selected template
+    navigate('/preview/elegant');
+  };
+
   return (
     <div className="min-h-screen w-full bg-white">
       {/* Header */}
@@ -107,9 +113,9 @@ const EventSchedule = () => {
               className="mb-4 text-gray-600 hover:text-wedding-navy" 
               asChild
             >
-              <Link to="/dashboard">
+              <Link to="/photo-gallery">
                 <ChevronLeft className="mr-1 h-4 w-4" />
-                <span>Back to Dashboard</span>
+                <span>Back to Photo Gallery</span>
               </Link>
             </Button>
             
@@ -271,6 +277,28 @@ const EventSchedule = () => {
                 <p className="text-gray-500">No events added yet. Click "Add Event" to get started.</p>
               </div>
             )}
+          </div>
+
+          {/* Complete Setup Section */}
+          <div className="mt-12 text-center">
+            <div className="bg-wedding-cream/50 rounded-xl p-8 max-w-2xl mx-auto">
+              <h3 className="text-2xl font-serif mb-4 text-wedding-navy">Ready to See Your Website?</h3>
+              <p className="text-gray-600 mb-6">
+                Your wedding website is ready! Preview it with your photos and event schedule to see how it looks to your guests.
+              </p>
+              
+              <Button
+                className="bg-wedding-navy hover:bg-wedding-navy/90 text-white px-8 py-6 h-auto text-lg btn-hover-effect"
+                onClick={handlePreviewWebsite}
+              >
+                Preview Your Website
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+              
+              <p className="text-sm text-gray-500 mt-4">
+                You can always come back to add more events or photos later
+              </p>
+            </div>
           </div>
         </Container>
       </main>

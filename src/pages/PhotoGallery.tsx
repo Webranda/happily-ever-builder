@@ -1,10 +1,10 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Container from '@/components/ui/Container';
 import Logo from '@/components/ui/Logo';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ArrowRight } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 import { usePhotoGallery, MAX_IMAGES } from '@/hooks/usePhotoGallery';
 import PhotoUploader from '@/components/photo-gallery/PhotoUploader';
 import PhotoGrid from '@/components/photo-gallery/PhotoGrid';
@@ -23,10 +23,16 @@ const PhotoGallery = () => {
   const hasUnsavedChanges = uploadedImages.some(img => img.file && !img.url);
   const hasSavedImages = uploadedImages.some(img => img.url && !img.file);
 
-  const handleCompleteSetup = () => {
-    // Navigate to template preview to see the website with actual content
-    navigate('/templates');
-  };
+  // Auto-redirect to event schedule when photos are successfully saved
+  useEffect(() => {
+    if (hasSavedImages && !hasUnsavedChanges && uploadedImages.length > 0) {
+      const timer = setTimeout(() => {
+        navigate('/event-schedule');
+      }, 2000); // 2 second delay to show success message
+      
+      return () => clearTimeout(timer);
+    }
+  }, [hasSavedImages, hasUnsavedChanges, uploadedImages.length, navigate]);
 
   return (
     <div className="min-h-screen w-full bg-white">
@@ -114,26 +120,12 @@ const PhotoGallery = () => {
                     )}
                     
                     {hasSavedImages && !hasUnsavedChanges && (
-                      <>
-                        <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-                          <p className="text-green-700 font-medium">✓ Your photos have been saved successfully!</p>
-                          <p className="text-green-600 text-sm mt-1">
-                            Ready to see your wedding website with your photos
-                          </p>
-                        </div>
-                        
-                        <Button
-                          className="bg-wedding-navy hover:bg-wedding-navy/90 text-white px-8 py-6 h-auto text-lg btn-hover-effect"
-                          onClick={handleCompleteSetup}
-                        >
-                          Complete Setup & Preview Website
-                          <ArrowRight className="ml-2 h-5 w-5" />
-                        </Button>
-                        
-                        <p className="text-sm text-gray-600">
-                          Continue to see your wedding website with your uploaded photos
+                      <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                        <p className="text-green-700 font-medium">✓ Your photos have been saved successfully!</p>
+                        <p className="text-green-600 text-sm mt-1">
+                          Redirecting to event schedule in a moment...
                         </p>
-                      </>
+                      </div>
                     )}
                   </div>
                 </div>
