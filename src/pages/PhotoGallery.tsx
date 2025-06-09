@@ -1,15 +1,16 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Container from '@/components/ui/Container';
 import Logo from '@/components/ui/Logo';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, ArrowRight } from 'lucide-react';
 import { usePhotoGallery, MAX_IMAGES } from '@/hooks/usePhotoGallery';
 import PhotoUploader from '@/components/photo-gallery/PhotoUploader';
 import PhotoGrid from '@/components/photo-gallery/PhotoGrid';
 
 const PhotoGallery = () => {
+  const navigate = useNavigate();
   const {
     uploadedImages,
     removeImage,
@@ -20,6 +21,12 @@ const PhotoGallery = () => {
   } = usePhotoGallery();
 
   const hasUnsavedChanges = uploadedImages.some(img => img.file && !img.url);
+  const hasSavedImages = uploadedImages.some(img => img.url && !img.file);
+
+  const handleCompleteSetup = () => {
+    // Navigate to template preview to see the website with actual content
+    navigate('/templates');
+  };
 
   return (
     <div className="min-h-screen w-full bg-white">
@@ -51,16 +58,16 @@ const PhotoGallery = () => {
               className="mb-4 text-gray-600 hover:text-wedding-navy"
               asChild
             >
-              <Link to="/dashboard">
+              <Link to="/template-selection">
                 <ChevronLeft className="mr-1 h-4 w-4" />
-                <span>Back to Dashboard</span>
+                <span>Back to Templates</span>
               </Link>
             </Button>
 
             <div className="text-center">
               <h1 className="text-3xl md:text-4xl mb-4 animate-fade-in">Photo Gallery</h1>
               <p className="text-gray-600 max-w-2xl mx-auto animate-fade-in">
-                Upload and manage photos for your wedding website gallery
+                Upload photos for your wedding website gallery. These will be displayed in your selected template.
               </p>
               {!user && (
                 <p className="text-red-600 mt-2">Please sign in to manage your photo gallery</p>
@@ -89,18 +96,44 @@ const PhotoGallery = () => {
                     )}
                   </div>
                   <PhotoGrid images={uploadedImages} onRemove={removeImage} />
-                  <div className="mt-6 text-center">
-                    <Button
-                      className="bg-wedding-gold hover:bg-wedding-gold/90 text-white disabled:bg-gray-400"
-                      onClick={saveGallery}
-                      disabled={loading || !user}
-                    >
-                      {loading ? "Saving..." : "Save Gallery"}
-                    </Button>
+                  
+                  <div className="mt-6 text-center space-y-4">
                     {hasUnsavedChanges && (
-                      <p className="text-sm text-gray-600 mt-2">
-                        Click "Save Gallery" to upload your new photos
-                      </p>
+                      <>
+                        <Button
+                          className="bg-wedding-gold hover:bg-wedding-gold/90 text-white disabled:bg-gray-400"
+                          onClick={saveGallery}
+                          disabled={loading || !user}
+                        >
+                          {loading ? "Saving..." : "Save Gallery"}
+                        </Button>
+                        <p className="text-sm text-gray-600">
+                          Click "Save Gallery" to upload your new photos
+                        </p>
+                      </>
+                    )}
+                    
+                    {hasSavedImages && !hasUnsavedChanges && (
+                      <>
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                          <p className="text-green-700 font-medium">✓ Your photos have been saved successfully!</p>
+                          <p className="text-green-600 text-sm mt-1">
+                            Ready to see your wedding website with your photos
+                          </p>
+                        </div>
+                        
+                        <Button
+                          className="bg-wedding-navy hover:bg-wedding-navy/90 text-white px-8 py-6 h-auto text-lg btn-hover-effect"
+                          onClick={handleCompleteSetup}
+                        >
+                          Complete Setup & Preview Website
+                          <ArrowRight className="ml-2 h-5 w-5" />
+                        </Button>
+                        
+                        <p className="text-sm text-gray-600">
+                          Continue to see your wedding website with your uploaded photos
+                        </p>
+                      </>
                     )}
                   </div>
                 </div>
