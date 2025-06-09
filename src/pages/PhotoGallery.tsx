@@ -1,10 +1,10 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Container from '@/components/ui/Container';
 import Logo from '@/components/ui/Logo';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, ArrowRight } from 'lucide-react';
 import { usePhotoGallery, MAX_IMAGES } from '@/hooks/usePhotoGallery';
 import PhotoUploader from '@/components/photo-gallery/PhotoUploader';
 import PhotoGrid from '@/components/photo-gallery/PhotoGrid';
@@ -23,16 +23,9 @@ const PhotoGallery = () => {
   const hasUnsavedChanges = uploadedImages.some(img => img.file && !img.url);
   const hasSavedImages = uploadedImages.some(img => img.url && !img.file);
 
-  // Auto-redirect to event schedule when photos are successfully saved
-  useEffect(() => {
-    if (hasSavedImages && !hasUnsavedChanges && uploadedImages.length > 0) {
-      const timer = setTimeout(() => {
-        navigate('/event-schedule');
-      }, 2000); // 2 second delay to show success message
-      
-      return () => clearTimeout(timer);
-    }
-  }, [hasSavedImages, hasUnsavedChanges, uploadedImages.length, navigate]);
+  const handleNextStep = () => {
+    navigate('/event-schedule');
+  };
 
   return (
     <div className="min-h-screen w-full bg-white">
@@ -122,14 +115,33 @@ const PhotoGallery = () => {
                     {hasSavedImages && !hasUnsavedChanges && (
                       <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
                         <p className="text-green-700 font-medium">✓ Your photos have been saved successfully!</p>
-                        <p className="text-green-600 text-sm mt-1">
-                          Redirecting to event schedule in a moment...
-                        </p>
                       </div>
                     )}
                   </div>
                 </div>
               )}
+
+              {/* Next Button */}
+              <div className="mt-12 text-center">
+                <div className="bg-wedding-cream/50 rounded-xl p-8 max-w-2xl mx-auto">
+                  <h3 className="text-2xl font-serif mb-4 text-wedding-navy">Ready for the Next Step?</h3>
+                  <p className="text-gray-600 mb-6">
+                    Continue to add your wedding events and create a complete schedule for your guests.
+                  </p>
+                  
+                  <Button
+                    className="bg-wedding-navy hover:bg-wedding-navy/90 text-white px-8 py-6 h-auto text-lg btn-hover-effect"
+                    onClick={handleNextStep}
+                  >
+                    Next: Event Schedule
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
+                  
+                  <p className="text-sm text-gray-500 mt-4">
+                    You can always come back to add more photos later
+                  </p>
+                </div>
+              </div>
             </>
           )}
 

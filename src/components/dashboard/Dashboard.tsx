@@ -131,7 +131,7 @@ const Dashboard: React.FC = () => {
           icon={<Image className="h-5 w-5 text-green-600" />}
           to="/photo-gallery"
           accent="green"
-          status="in-progress"
+          status="complete"
         />
         
         <DashboardCard

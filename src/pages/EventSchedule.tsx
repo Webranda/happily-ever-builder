@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import Container from '@/components/ui/Container';
 import Logo from '@/components/ui/Logo';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, Save } from 'lucide-react';
 import { toast } from 'sonner';
 import EventList from '@/components/event-schedule/EventList';
 import CompleteSetup from '@/components/event-schedule/CompleteSetup';
@@ -12,34 +12,9 @@ import type { EventItem } from '@/components/event-schedule/types';
 
 const EventSchedule = () => {
   const navigate = useNavigate();
-  const [events, setEvents] = useState<EventItem[]>([
-    {
-      id: '1',
-      title: 'Welcome Dinner',
-      date: '2024-09-14',
-      time: '19:00',
-      location: 'Sunset Restaurant',
-      description: 'Join us for a casual welcome dinner the night before our wedding.'
-    },
-    {
-      id: '2',
-      title: 'Wedding Ceremony',
-      date: '2024-09-15',
-      time: '16:00',
-      location: 'Lakeside Gardens',
-      description: 'Our wedding ceremony will take place overlooking the lake.'
-    },
-    {
-      id: '3',
-      title: 'Wedding Reception',
-      date: '2024-09-15',
-      time: '18:00',
-      location: 'Lakeside Gardens - Grand Hall',
-      description: 'Dinner, dancing and celebration will follow the ceremony.'
-    }
-  ]);
-  
+  const [events, setEvents] = useState<EventItem[]>([]);
   const [isAddingEvent, setIsAddingEvent] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
   const [newEvent, setNewEvent] = useState<Omit<EventItem, 'id'>>({
     title: '',
     date: '',
@@ -64,12 +39,25 @@ const EventSchedule = () => {
       description: ''
     });
     setIsAddingEvent(false);
+    setIsSaved(false); // Reset saved status when new event is added
     toast.success('Event added successfully!');
   };
 
   const handleRemoveEvent = (id: string) => {
     setEvents(prev => prev.filter(event => event.id !== id));
+    setIsSaved(false); // Reset saved status when event is removed
     toast.success('Event removed');
+  };
+
+  const handleSaveSchedule = () => {
+    if (events.length === 0) {
+      toast.error('Please add at least one event before saving');
+      return;
+    }
+    
+    // In a real app, this would save to a database
+    setIsSaved(true);
+    toast.success('Event schedule saved successfully!');
   };
 
   const handlePreviewWebsite = () => {
@@ -133,7 +121,31 @@ const EventSchedule = () => {
             onCancelAddingEvent={() => setIsAddingEvent(false)}
           />
 
-          <CompleteSetup onPreviewWebsite={handlePreviewWebsite} />
+          {/* Save Button */}
+          {events.length > 0 && !isSaved && (
+            <div className="mb-8 text-center">
+              <Button
+                className="bg-wedding-gold hover:bg-wedding-gold/90 text-white px-8 py-3"
+                onClick={handleSaveSchedule}
+              >
+                <Save className="mr-2 h-5 w-5" />
+                Save Event Schedule
+              </Button>
+            </div>
+          )}
+
+          {/* Success message and Preview button - only show after saving */}
+          {isSaved && (
+            <>
+              <div className="mb-8 text-center">
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6 max-w-2xl mx-auto">
+                  <p className="text-green-700 font-medium">✓ Your event schedule has been saved successfully!</p>
+                </div>
+              </div>
+              
+              <CompleteSetup onPreviewWebsite={handlePreviewWebsite} />
+            </>
+          )}
         </Container>
       </main>
 
