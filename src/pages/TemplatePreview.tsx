@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import PreviewHeader from '@/components/template-preview/PreviewHeader';
 import HeroSection from '@/components/template-preview/HeroSection';
 import OurStorySection from '@/components/template-preview/OurStorySection';
+import PhotoGallerySection from '@/components/template-preview/PhotoGallerySection';
 import EventScheduleSection from '@/components/template-preview/EventScheduleSection';
 import EventDetailsSection from '@/components/template-preview/EventDetailsSection';
 import RSVPSection from '@/components/template-preview/RSVPSection';
@@ -67,6 +68,8 @@ const TemplatePreview = () => {
   const { user } = useAuth();
   const [template, setTemplate] = useState<any>(null);
   const [events, setEvents] = useState<EventItem[]>([]);
+  const [images, setImages] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
   const [weddingDetails, setWeddingDetails] = useState<WeddingDetails>({
     partner1Name: 'Sarah',
     partner2Name: 'Michael',
@@ -86,33 +89,67 @@ const TemplatePreview = () => {
       navigate('/templates');
     }
     
-    // Check for stored wedding details
-    const storedDetailsString = localStorage.getItem('weddingDetails');
-    if (storedDetailsString) {
-      try {
-        const storedDetails = JSON.parse(storedDetailsString);
-        setWeddingDetails(prev => ({
-          ...prev,
-          ...storedDetails
-        }));
-      } catch (error) {
-        console.error('Error parsing stored wedding details:', error);
-      }
+    loadUserData();
+  }, [templateId, navigate, user]);
+
+  const loadUserData = async () => {
+    if (!user) {
+      setLoading(false);
+      return;
     }
 
-    // Load saved events from Supabase
-    const loadEvents = async () => {
-      if (!user) return;
-      
-      try {
-        const { data, error } = await supabase
-          .from('event_schedules')
-          .select('*')
-          .order('date', { ascending: true });
+    try {
+      // Load wedding details from Supabase
+      const { data: weddingData, error: weddingError } = await supabase
+        .from('wedding_sites')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
 
-        if (error) throw error;
+      if (weddingError) {
+        console.error('Error loading wedding details:', weddingError);
+      } else if (weddingData) {
+        setWeddingDetails({
+          partner1Name: weddingData.partner1_name || 'Sarah',
+          partner2Name: weddingData.partner2_name || 'Michael',
+          coupleStory: weddingData.couple_story || 'We met five years ago at a friend\'s birthday party and instantly connected over our love of travel and dogs. After three years of adventures together, Michael proposed during a sunset hike in Yosemite National Park.',
+          eventDate: weddingData.event_date || 'September 15, 2024',
+          venueName: weddingData.venue_name || 'Lakeside Gardens',
+          venueAddress: weddingData.venue_address || '123 Evergreen Avenue, Portland, OR 97201',
+          eventTime: weddingData.event_time || '4:00 PM',
+          receptionTime: weddingData.reception_time || '6:00 PM',
+        });
 
-        const transformedEvents: EventItem[] = data.map(event => ({
+        // Set images from wedding data
+        if (weddingData.images && Array.isArray(weddingData.images)) {
+          setImages(weddingData.images);
+        }
+      } else {
+        // Check for stored wedding details in localStorage as fallback
+        const storedDetailsString = localStorage.getItem('weddingDetails');
+        if (storedDetailsString) {
+          try {
+            const storedDetails = JSON.parse(storedDetailsString);
+            setWeddingDetails(prev => ({
+              ...prev,
+              ...storedDetails
+            }));
+          } catch (error) {
+            console.error('Error parsing stored wedding details:', error);
+          }
+        }
+      }
+
+      // Load events from Supabase
+      const { data: eventsData, error: eventsError } = await supabase
+        .from('event_schedules')
+        .select('*')
+        .order('date', { ascending: true });
+
+      if (eventsError) {
+        console.error('Error loading events:', eventsError);
+      } else if (eventsData) {
+        const transformedEvents: EventItem[] = eventsData.map(event => ({
           id: event.id,
           title: event.title,
           date: event.date,
@@ -120,18 +157,29 @@ const TemplatePreview = () => {
           location: event.location || '',
           description: event.description || ''
         }));
-
         setEvents(transformedEvents);
-      } catch (error) {
-        console.error('Error loading events:', error);
       }
-    };
 
-    loadEvents();
-  }, [templateId, navigate, user]);
+    } catch (error) {
+      console.error('Error loading user data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-wedding-navy mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading your wedding website...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!template) {
-    return <div>Loading...</div>;
+    return <div>Template not found</div>;
   }
 
   return (
@@ -152,6 +200,13 @@ const TemplatePreview = () => {
           partner2Name={weddingDetails.partner2Name}
           coupleStory={weddingDetails.coupleStory}
         />
+
+        {images.length > 0 && (
+          <PhotoGallerySection
+            template={template}
+            images={images}
+          />
+        )}
 
         <EventScheduleSection
           template={template}
