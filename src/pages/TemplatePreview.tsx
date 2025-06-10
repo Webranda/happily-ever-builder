@@ -1,10 +1,15 @@
 
 import React, { useEffect, useState } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { X, Heart, Calendar, Map, Users, ArrowLeft, Clock, MapPin } from 'lucide-react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import PreviewHeader from '@/components/template-preview/PreviewHeader';
+import HeroSection from '@/components/template-preview/HeroSection';
+import OurStorySection from '@/components/template-preview/OurStorySection';
+import EventScheduleSection from '@/components/template-preview/EventScheduleSection';
+import EventDetailsSection from '@/components/template-preview/EventDetailsSection';
+import RSVPSection from '@/components/template-preview/RSVPSection';
+import PreviewFooter from '@/components/template-preview/PreviewFooter';
 
 interface WeddingDetails {
   partner1Name: string;
@@ -129,206 +134,44 @@ const TemplatePreview = () => {
     return <div>Loading...</div>;
   }
 
-  const closePreview = () => {
-    navigate(-1);
-  };
-
   return (
     <div style={{ fontFamily: template.fontFamily }} className="min-h-screen bg-white">
-      {/* Preview Header Bar */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-black bg-opacity-80 text-white py-3 px-6 flex justify-between items-center">
-        <Button
-          variant="ghost"
-          className="text-white hover:bg-black/20"
-          onClick={closePreview}
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          <span className="hidden sm:inline">Back to Templates</span>
-        </Button>
-        <div className="text-sm md:text-base font-medium">Preview: {template.name}</div>
-        <Button
-          variant="ghost"
-          className="text-white hover:bg-black/20 p-2 h-auto"
-          onClick={closePreview}
-        >
-          <X className="h-5 w-5" />
-        </Button>
-      </div>
+      <PreviewHeader templateName={template.name} />
+      
+      <div className="pt-14">
+        <HeroSection
+          template={template}
+          partner1Name={weddingDetails.partner1Name}
+          partner2Name={weddingDetails.partner2Name}
+          eventDate={weddingDetails.eventDate}
+        />
 
-      {/* Template Preview Content */}
-      <div className="pt-14"> {/* Add padding to account for the fixed header */}
-        {/* Hero Section */}
-        <div 
-          className="relative min-h-[80vh] flex items-center justify-center bg-cover bg-center"
-          style={{ backgroundImage: `url(${template.backgroundImage})` }}
-        >
-          <div className="absolute inset-0 bg-black bg-opacity-40"></div>
-          <div className="relative z-10 text-center text-white px-4 py-16 max-w-3xl mx-auto">
-            <h1 className="text-4xl md:text-7xl mb-6" style={{ fontFamily: template.fontFamily }}>
-              {weddingDetails.partner1Name} & {weddingDetails.partner2Name}
-            </h1>
-            <p className="text-xl md:text-2xl mb-8">
-              We're getting married!
-            </p>
-            <div className="text-2xl md:text-3xl mb-6">{weddingDetails.eventDate}</div>
-            <Button 
-              className={`${template.buttonStyle} text-white px-6 py-4 md:px-8 md:py-6 h-auto rounded-md text-lg`}
-            >
-              RSVP Now
-            </Button>
-          </div>
-        </div>
+        <OurStorySection
+          template={template}
+          partner1Name={weddingDetails.partner1Name}
+          partner2Name={weddingDetails.partner2Name}
+          coupleStory={weddingDetails.coupleStory}
+        />
 
-        {/* Our Story Section */}
-        <section className="py-16 px-6" style={{ backgroundColor: template.secondaryColor }}>
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl mb-8" style={{ color: template.primaryColor }}>Our Story</h2>
-            <div className="flex flex-col md:flex-row items-center gap-8 mb-12">
-              <div className="flex-1">
-                <div className="aspect-square overflow-hidden rounded-full max-w-[200px] md:max-w-[250px] mx-auto">
-                  <img 
-                    src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1288&auto=format&fit=crop" 
-                    alt={weddingDetails.partner1Name} 
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <h3 className="text-2xl mt-4" style={{ color: template.primaryColor }}>{weddingDetails.partner1Name}</h3>
-                <p className="text-gray-600">The Bride</p>
-              </div>
-              <div className="text-5xl py-4 md:py-0">
-                <Heart style={{ color: template.primaryColor }} className="h-12 w-12 mx-auto" />
-              </div>
-              <div className="flex-1">
-                <div className="aspect-square overflow-hidden rounded-full max-w-[200px] md:max-w-[250px] mx-auto">
-                  <img 
-                    src="https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?q=80&w=1740&auto=format&fit=crop" 
-                    alt={weddingDetails.partner2Name} 
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <h3 className="text-2xl mt-4" style={{ color: template.primaryColor }}>{weddingDetails.partner2Name}</h3>
-                <p className="text-gray-600">The Groom</p>
-              </div>
-            </div>
-            <p className="text-gray-700 mb-6 text-lg">
-              {weddingDetails.coupleStory || "We met five years ago at a friend's birthday party and instantly connected over our love of travel and dogs. After three years of adventures together, Michael proposed during a sunset hike in Yosemite National Park."}
-            </p>
-            <p className="text-gray-700 text-lg">
-              We can't wait to celebrate our special day with all of our friends and family who have supported us throughout our journey together.
-            </p>
-          </div>
-        </section>
+        <EventScheduleSection
+          template={template}
+          events={events}
+        />
 
-        {/* Event Schedule Section */}
-        {events.length > 0 && (
-          <section className="py-16 px-6">
-            <div className="max-w-4xl mx-auto">
-              <h2 className="text-3xl md:text-4xl mb-10 text-center" style={{ color: template.primaryColor }}>Wedding Schedule</h2>
-              
-              <div className="space-y-6">
-                {events.map(event => (
-                  <div key={event.id} className="p-6 shadow-soft rounded-lg bg-white border border-gray-100">
-                    <h3 className="text-xl font-medium mb-3" style={{ color: template.primaryColor }}>
-                      {event.title}
-                    </h3>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
-                      <div className="flex items-center text-gray-700">
-                        <Calendar className="h-4 w-4 mr-2 shrink-0" />
-                        <span>{new Date(event.date).toLocaleDateString('en-US', { 
-                          weekday: 'long',
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        })}</span>
-                      </div>
-                      
-                      {event.time && (
-                        <div className="flex items-center text-gray-700">
-                          <Clock className="h-4 w-4 mr-2 shrink-0" />
-                          <span>{event.time}</span>
-                        </div>
-                      )}
-                      
-                      {event.location && (
-                        <div className="flex items-center text-gray-700 md:col-span-2">
-                          <MapPin className="h-4 w-4 mr-2 shrink-0" />
-                          <span>{event.location}</span>
-                        </div>
-                      )}
-                    </div>
-                    
-                    {event.description && (
-                      <p className="text-gray-600">{event.description}</p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
+        <EventDetailsSection
+          template={template}
+          weddingDetails={weddingDetails}
+          showSection={events.length === 0}
+        />
 
-        {/* Event Details - fallback if no custom events */}
-        {events.length === 0 && (
-          <section className="py-16 px-6">
-            <div className="max-w-4xl mx-auto">
-              <h2 className="text-3xl md:text-4xl mb-10 text-center" style={{ color: template.primaryColor }}>Wedding Details</h2>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div className="text-center p-6 shadow-soft rounded-lg">
-                  <Calendar className="h-10 w-10 mx-auto mb-4" style={{ color: template.primaryColor }} />
-                  <h3 className="text-xl mb-3" style={{ color: template.primaryColor }}>When</h3>
-                  <p className="text-gray-700">{weddingDetails.eventDate}</p>
-                  <p className="text-gray-700">Ceremony: {weddingDetails.eventTime}</p>
-                  <p className="text-gray-700">Reception: {weddingDetails.receptionTime}</p>
-                </div>
-                
-                <div className="text-center p-6 shadow-soft rounded-lg">
-                  <Map className="h-10 w-10 mx-auto mb-4" style={{ color: template.primaryColor }} />
-                  <h3 className="text-xl mb-3" style={{ color: template.primaryColor }}>Where</h3>
-                  <p className="text-gray-700">{weddingDetails.venueName}</p>
-                  <p className="text-gray-700">{weddingDetails.venueAddress}</p>
-                </div>
-                
-                <div className="text-center p-6 shadow-soft rounded-lg">
-                  <Users className="h-10 w-10 mx-auto mb-4" style={{ color: template.primaryColor }} />
-                  <h3 className="text-xl mb-3" style={{ color: template.primaryColor }}>Attire</h3>
-                  <p className="text-gray-700">Semi-formal / Cocktail</p>
-                  <p className="text-gray-700">Outdoor ceremony</p>
-                  <p className="text-gray-700">Indoor reception</p>
-                </div>
-              </div>
-              
-              <div className="mt-12 text-center">
-                <Button 
-                  className={`${template.buttonStyle} text-white px-6 py-3 rounded-md`}
-                >
-                  View Map & Directions
-                </Button>
-              </div>
-            </div>
-          </section>
-        )}
+        <RSVPSection template={template} />
 
-        {/* RSVP Section */}
-        <section className="py-16 px-6" style={{ backgroundColor: template.secondaryColor }}>
-          <div className="max-w-2xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl mb-4" style={{ color: template.primaryColor }}>RSVP</h2>
-            <p className="mb-8 text-gray-700">We would be honored to have you join us on our special day. Please let us know if you can make it!</p>
-            <Button 
-              className={`${template.buttonStyle} text-white px-6 py-4 md:px-8 md:py-6 h-auto rounded-md text-lg mb-4`}
-            >
-              Respond to Invitation
-            </Button>
-            <p className="text-sm text-gray-500">Please RSVP by August 15, 2024</p>
-          </div>
-        </section>
-
-        {/* Footer */}
-        <footer className={template.headerStyle + " text-white text-center py-8"}>
-          <p>{weddingDetails.partner1Name} & {weddingDetails.partner2Name}</p>
-          <p className="mt-2">{weddingDetails.eventDate}</p>
-        </footer>
+        <PreviewFooter
+          template={template}
+          partner1Name={weddingDetails.partner1Name}
+          partner2Name={weddingDetails.partner2Name}
+          eventDate={weddingDetails.eventDate}
+        />
       </div>
     </div>
   );
