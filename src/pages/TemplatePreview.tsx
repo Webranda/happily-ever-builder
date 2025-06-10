@@ -2,7 +2,9 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { X, Heart, Calendar, Map, Users, ArrowLeft } from 'lucide-react';
+import { X, Heart, Calendar, Map, Users, ArrowLeft, Clock, MapPin } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
 interface WeddingDetails {
   partner1Name: string;
@@ -13,6 +15,15 @@ interface WeddingDetails {
   venueAddress: string;
   eventTime: string;
   receptionTime: string;
+}
+
+interface EventItem {
+  id: string;
+  title: string;
+  date: string;
+  time: string;
+  location: string;
+  description: string;
 }
 
 const templates = {
@@ -48,7 +59,9 @@ const templates = {
 const TemplatePreview = () => {
   const { templateId } = useParams<{ templateId: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [template, setTemplate] = useState<any>(null);
+  const [events, setEvents] = useState<EventItem[]>([]);
   const [weddingDetails, setWeddingDetails] = useState<WeddingDetails>({
     partner1Name: 'Sarah',
     partner2Name: 'Michael',
@@ -81,7 +94,36 @@ const TemplatePreview = () => {
         console.error('Error parsing stored wedding details:', error);
       }
     }
-  }, [templateId, navigate]);
+
+    // Load saved events from Supabase
+    const loadEvents = async () => {
+      if (!user) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('event_schedules')
+          .select('*')
+          .order('date', { ascending: true });
+
+        if (error) throw error;
+
+        const transformedEvents: EventItem[] = data.map(event => ({
+          id: event.id,
+          title: event.title,
+          date: event.date,
+          time: event.time || '',
+          location: event.location || '',
+          description: event.description || ''
+        }));
+
+        setEvents(transformedEvents);
+      } catch (error) {
+        console.error('Error loading events:', error);
+      }
+    };
+
+    loadEvents();
+  }, [templateId, navigate, user]);
 
   if (!template) {
     return <div>Loading...</div>;
@@ -177,45 +219,96 @@ const TemplatePreview = () => {
           </div>
         </section>
 
-        {/* Event Details */}
-        <section className="py-16 px-6">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl md:text-4xl mb-10 text-center" style={{ color: template.primaryColor }}>Wedding Details</h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="text-center p-6 shadow-soft rounded-lg">
-                <Calendar className="h-10 w-10 mx-auto mb-4" style={{ color: template.primaryColor }} />
-                <h3 className="text-xl mb-3" style={{ color: template.primaryColor }}>When</h3>
-                <p className="text-gray-700">{weddingDetails.eventDate}</p>
-                <p className="text-gray-700">Ceremony: {weddingDetails.eventTime}</p>
-                <p className="text-gray-700">Reception: {weddingDetails.receptionTime}</p>
-              </div>
+        {/* Event Schedule Section */}
+        {events.length > 0 && (
+          <section className="py-16 px-6">
+            <div className="max-w-4xl mx-auto">
+              <h2 className="text-3xl md:text-4xl mb-10 text-center" style={{ color: template.primaryColor }}>Wedding Schedule</h2>
               
-              <div className="text-center p-6 shadow-soft rounded-lg">
-                <Map className="h-10 w-10 mx-auto mb-4" style={{ color: template.primaryColor }} />
-                <h3 className="text-xl mb-3" style={{ color: template.primaryColor }}>Where</h3>
-                <p className="text-gray-700">{weddingDetails.venueName}</p>
-                <p className="text-gray-700">{weddingDetails.venueAddress}</p>
-              </div>
-              
-              <div className="text-center p-6 shadow-soft rounded-lg">
-                <Users className="h-10 w-10 mx-auto mb-4" style={{ color: template.primaryColor }} />
-                <h3 className="text-xl mb-3" style={{ color: template.primaryColor }}>Attire</h3>
-                <p className="text-gray-700">Semi-formal / Cocktail</p>
-                <p className="text-gray-700">Outdoor ceremony</p>
-                <p className="text-gray-700">Indoor reception</p>
+              <div className="space-y-6">
+                {events.map(event => (
+                  <div key={event.id} className="p-6 shadow-soft rounded-lg bg-white border border-gray-100">
+                    <h3 className="text-xl font-medium mb-3" style={{ color: template.primaryColor }}>
+                      {event.title}
+                    </h3>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                      <div className="flex items-center text-gray-700">
+                        <Calendar className="h-4 w-4 mr-2 shrink-0" />
+                        <span>{new Date(event.date).toLocaleDateString('en-US', { 
+                          weekday: 'long',
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        })}</span>
+                      </div>
+                      
+                      {event.time && (
+                        <div className="flex items-center text-gray-700">
+                          <Clock className="h-4 w-4 mr-2 shrink-0" />
+                          <span>{event.time}</span>
+                        </div>
+                      )}
+                      
+                      {event.location && (
+                        <div className="flex items-center text-gray-700 md:col-span-2">
+                          <MapPin className="h-4 w-4 mr-2 shrink-0" />
+                          <span>{event.location}</span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {event.description && (
+                      <p className="text-gray-600">{event.description}</p>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
-            
-            <div className="mt-12 text-center">
-              <Button 
-                className={`${template.buttonStyle} text-white px-6 py-3 rounded-md`}
-              >
-                View Map & Directions
-              </Button>
+          </section>
+        )}
+
+        {/* Event Details - fallback if no custom events */}
+        {events.length === 0 && (
+          <section className="py-16 px-6">
+            <div className="max-w-4xl mx-auto">
+              <h2 className="text-3xl md:text-4xl mb-10 text-center" style={{ color: template.primaryColor }}>Wedding Details</h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="text-center p-6 shadow-soft rounded-lg">
+                  <Calendar className="h-10 w-10 mx-auto mb-4" style={{ color: template.primaryColor }} />
+                  <h3 className="text-xl mb-3" style={{ color: template.primaryColor }}>When</h3>
+                  <p className="text-gray-700">{weddingDetails.eventDate}</p>
+                  <p className="text-gray-700">Ceremony: {weddingDetails.eventTime}</p>
+                  <p className="text-gray-700">Reception: {weddingDetails.receptionTime}</p>
+                </div>
+                
+                <div className="text-center p-6 shadow-soft rounded-lg">
+                  <Map className="h-10 w-10 mx-auto mb-4" style={{ color: template.primaryColor }} />
+                  <h3 className="text-xl mb-3" style={{ color: template.primaryColor }}>Where</h3>
+                  <p className="text-gray-700">{weddingDetails.venueName}</p>
+                  <p className="text-gray-700">{weddingDetails.venueAddress}</p>
+                </div>
+                
+                <div className="text-center p-6 shadow-soft rounded-lg">
+                  <Users className="h-10 w-10 mx-auto mb-4" style={{ color: template.primaryColor }} />
+                  <h3 className="text-xl mb-3" style={{ color: template.primaryColor }}>Attire</h3>
+                  <p className="text-gray-700">Semi-formal / Cocktail</p>
+                  <p className="text-gray-700">Outdoor ceremony</p>
+                  <p className="text-gray-700">Indoor reception</p>
+                </div>
+              </div>
+              
+              <div className="mt-12 text-center">
+                <Button 
+                  className={`${template.buttonStyle} text-white px-6 py-3 rounded-md`}
+                >
+                  View Map & Directions
+                </Button>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
 
         {/* RSVP Section */}
         <section className="py-16 px-6" style={{ backgroundColor: template.secondaryColor }}>

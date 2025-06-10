@@ -16,13 +16,15 @@ interface EventFormProps {
   setNewEvent: React.Dispatch<React.SetStateAction<Omit<EventItem, 'id'>>>;
   onAddEvent: () => void;
   onCancel: () => void;
+  saving?: boolean;
 }
 
 const EventForm: React.FC<EventFormProps> = ({
   newEvent,
   setNewEvent,
   onAddEvent,
-  onCancel
+  onCancel,
+  saving = false
 }) => {
   return (
     <div className="mb-8 p-4 border border-gray-200 rounded-lg bg-white">
@@ -37,6 +39,7 @@ const EventForm: React.FC<EventFormProps> = ({
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-wedding-gold/30"
             placeholder="Wedding Ceremony"
             required
+            disabled={saving}
           />
         </div>
         <div>
@@ -47,6 +50,7 @@ const EventForm: React.FC<EventFormProps> = ({
             onChange={(e) => setNewEvent(prev => ({ ...prev, date: e.target.value }))}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-wedding-gold/30"
             required
+            disabled={saving}
           />
         </div>
         <div>
@@ -56,6 +60,7 @@ const EventForm: React.FC<EventFormProps> = ({
             value={newEvent.time}
             onChange={(e) => setNewEvent(prev => ({ ...prev, time: e.target.value }))}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-wedding-gold/30"
+            disabled={saving}
           />
         </div>
         <div>
@@ -66,6 +71,7 @@ const EventForm: React.FC<EventFormProps> = ({
             onChange={(e) => setNewEvent(prev => ({ ...prev, location: e.target.value }))}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-wedding-gold/30"
             placeholder="Wedding Venue"
+            disabled={saving}
           />
         </div>
         <div className="md:col-span-2">
@@ -76,6 +82,7 @@ const EventForm: React.FC<EventFormProps> = ({
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-wedding-gold/30"
             rows={3}
             placeholder="Provide additional details about this event..."
+            disabled={saving}
           />
         </div>
       </div>
@@ -83,14 +90,16 @@ const EventForm: React.FC<EventFormProps> = ({
         <Button 
           variant="outline" 
           onClick={onCancel}
+          disabled={saving}
         >
           Cancel
         </Button>
         <Button 
           className="bg-wedding-navy hover:bg-wedding-navy/90" 
           onClick={onAddEvent}
+          disabled={saving}
         >
-          Add Event
+          {saving ? 'Saving...' : 'Add Event'}
         </Button>
       </div>
     </div>

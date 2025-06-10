@@ -4,17 +4,19 @@ import { Link, useNavigate } from 'react-router-dom';
 import Container from '@/components/ui/Container';
 import Logo from '@/components/ui/Logo';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, Save } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import EventList from '@/components/event-schedule/EventList';
 import CompleteSetup from '@/components/event-schedule/CompleteSetup';
+import { useEventSchedule } from '@/hooks/useEventSchedule';
+import { useAuth } from '@/hooks/useAuth';
 import type { EventItem } from '@/components/event-schedule/types';
 
 const EventSchedule = () => {
   const navigate = useNavigate();
-  const [events, setEvents] = useState<EventItem[]>([]);
+  const { user } = useAuth();
+  const { events, loading, saving, saveEvent, removeEvent } = useEventSchedule();
   const [isAddingEvent, setIsAddingEvent] = useState(false);
-  const [isSaved, setIsSaved] = useState(false);
   const [newEvent, setNewEvent] = useState<Omit<EventItem, 'id'>>({
     title: '',
     date: '',
@@ -23,41 +25,27 @@ const EventSchedule = () => {
     description: ''
   });
 
-  const handleAddEvent = () => {
+  const handleAddEvent = async () => {
     if (!newEvent.title || !newEvent.date) {
       toast.error('Event title and date are required');
       return;
     }
     
-    const id = Date.now().toString();
-    setEvents(prev => [...prev, { ...newEvent, id }]);
-    setNewEvent({
-      title: '',
-      date: '',
-      time: '',
-      location: '',
-      description: ''
-    });
-    setIsAddingEvent(false);
-    setIsSaved(false); // Reset saved status when new event is added
-    toast.success('Event added successfully!');
+    const savedEvent = await saveEvent(newEvent);
+    if (savedEvent) {
+      setNewEvent({
+        title: '',
+        date: '',
+        time: '',
+        location: '',
+        description: ''
+      });
+      setIsAddingEvent(false);
+    }
   };
 
   const handleRemoveEvent = (id: string) => {
-    setEvents(prev => prev.filter(event => event.id !== id));
-    setIsSaved(false); // Reset saved status when event is removed
-    toast.success('Event removed');
-  };
-
-  const handleSaveSchedule = () => {
-    if (events.length === 0) {
-      toast.error('Please add at least one event before saving');
-      return;
-    }
-    
-    // In a real app, this would save to a database
-    setIsSaved(true);
-    toast.success('Event schedule saved successfully!');
+    removeEvent(id);
   };
 
   const handlePreviewWebsite = () => {
@@ -65,6 +53,53 @@ const EventSchedule = () => {
     // In a real app, this would use the user's selected template
     navigate('/preview/elegant');
   };
+
+  if (!user) {
+    return (
+      <div className="min-h-screen w-full bg-white">
+        {/* Header */}
+        <header className="w-full py-4 px-6 shadow-soft backdrop-blur-sm bg-white/80 sticky top-0 z-10">
+          <div className="max-w-7xl mx-auto flex justify-between items-center">
+            <Link to="/" className="inline-block">
+              <Logo size="md" />
+            </Link>
+            
+            <Button 
+              variant="ghost" 
+              className="text-gray-600 hover:text-wedding-navy"
+              asChild
+            >
+              <Link to="/dashboard">
+                <span>Back to Dashboard</span>
+              </Link>
+            </Button>
+          </div>
+        </header>
+
+        {/* Main Content */}
+        <main className="py-10 md:py-16">
+          <Container maxWidth="xl">
+            <div className="text-center">
+              <h1 className="text-3xl md:text-4xl mb-4">Event Schedule</h1>
+              <p className="text-gray-600 mb-6">Please sign in to manage your event schedule</p>
+              <Button asChild>
+                <Link to="/auth">Sign In</Link>
+              </Button>
+            </div>
+          </Container>
+        </main>
+
+        {/* Footer */}
+        <footer className="py-6 mt-12 border-t border-gray-100">
+          <Container>
+            <div className="text-center text-sm text-gray-500">
+              <p>&copy; {new Date().getFullYear()} EverAfter. All rights reserved.</p>
+            </div>
+          </Container>
+        </footer>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen w-full bg-white">
@@ -110,36 +145,30 @@ const EventSchedule = () => {
             </div>
           </div>
           
-          <EventList
-            events={events}
-            isAddingEvent={isAddingEvent}
-            newEvent={newEvent}
-            setNewEvent={setNewEvent}
-            onAddEvent={handleAddEvent}
-            onRemoveEvent={handleRemoveEvent}
-            onStartAddingEvent={() => setIsAddingEvent(true)}
-            onCancelAddingEvent={() => setIsAddingEvent(false)}
-          />
-
-          {/* Save Button */}
-          {events.length > 0 && !isSaved && (
-            <div className="mb-8 text-center">
-              <Button
-                className="bg-wedding-gold hover:bg-wedding-gold/90 text-white px-8 py-3"
-                onClick={handleSaveSchedule}
-              >
-                <Save className="mr-2 h-5 w-5" />
-                Save Event Schedule
-              </Button>
+          {loading ? (
+            <div className="text-center py-12">
+              <p className="text-gray-500">Loading your events...</p>
             </div>
+          ) : (
+            <EventList
+              events={events}
+              isAddingEvent={isAddingEvent}
+              newEvent={newEvent}
+              setNewEvent={setNewEvent}
+              onAddEvent={handleAddEvent}
+              onRemoveEvent={handleRemoveEvent}
+              onStartAddingEvent={() => setIsAddingEvent(true)}
+              onCancelAddingEvent={() => setIsAddingEvent(false)}
+              saving={saving}
+            />
           )}
 
-          {/* Success message and Preview button - only show after saving */}
-          {isSaved && (
+          {/* Show completion message and preview button when events exist */}
+          {events.length > 0 && (
             <>
               <div className="mb-8 text-center">
                 <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6 max-w-2xl mx-auto">
-                  <p className="text-green-700 font-medium">✓ Your event schedule has been saved successfully!</p>
+                  <p className="text-green-700 font-medium">✓ Your events are automatically saved!</p>
                 </div>
               </div>
               

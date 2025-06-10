@@ -23,6 +23,7 @@ interface EventListProps {
   onRemoveEvent: (id: string) => void;
   onStartAddingEvent: () => void;
   onCancelAddingEvent: () => void;
+  saving?: boolean;
 }
 
 const EventList: React.FC<EventListProps> = ({
@@ -33,7 +34,8 @@ const EventList: React.FC<EventListProps> = ({
   onAddEvent,
   onRemoveEvent,
   onStartAddingEvent,
-  onCancelAddingEvent
+  onCancelAddingEvent,
+  saving = false
 }) => {
   return (
     <div className="mb-8 p-6 bg-wedding-cream/30 rounded-xl">
@@ -46,6 +48,7 @@ const EventList: React.FC<EventListProps> = ({
         <Button 
           className="bg-wedding-gold hover:bg-wedding-gold/90 text-white"
           onClick={onStartAddingEvent}
+          disabled={saving}
         >
           <Plus className="mr-2 h-4 w-4" /> Add Event
         </Button>
@@ -57,6 +60,7 @@ const EventList: React.FC<EventListProps> = ({
           setNewEvent={setNewEvent}
           onAddEvent={onAddEvent}
           onCancel={onCancelAddingEvent}
+          saving={saving}
         />
       )}
       

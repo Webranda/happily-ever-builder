@@ -14,6 +14,7 @@ import {
   Heart
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useEventSchedule } from '@/hooks/useEventSchedule';
 
 interface DashboardCardProps {
   title: string;
@@ -83,6 +84,9 @@ const DashboardCard: React.FC<DashboardCardProps> = ({
 };
 
 const Dashboard: React.FC = () => {
+  const { events } = useEventSchedule();
+  const eventScheduleStatus = events.length > 0 ? 'complete' : 'in-progress';
+
   return (
     <div className="w-full animate-fade-in">
       <div className="mb-8 p-6 bg-gradient-to-r from-wedding-cream to-wedding-blush/30 rounded-xl shadow-soft">
@@ -140,7 +144,7 @@ const Dashboard: React.FC = () => {
           icon={<Calendar className="h-5 w-5 text-amber-600" />}
           to="/event-schedule"
           accent="gold"
-          status="in-progress"
+          status={eventScheduleStatus}
         />
         
         <DashboardCard
