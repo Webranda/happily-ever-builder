@@ -56,7 +56,7 @@ const EventDetailsSection: React.FC<EventDetailsSectionProps> = ({
         
         <div className="mt-12 text-center">
           <Button 
-            className={`${template.buttonStyle} text-white px-6 py-3 rounded-md`}
+            className="bg-wedding-navy hover:bg-wedding-navy/90 text-white px-6 py-3 rounded-md"
           >
             View Map & Directions
           </Button>

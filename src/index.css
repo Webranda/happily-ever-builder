@@ -124,7 +124,7 @@
   }
   
   .decorated-border {
-    @apply border-b-2 border-wedding-gold/40 pb-1;
+    @apply border-b-2 border-wedding-gold/40 pb-0.5 mb-0.5;
   }
   
   .color-card-1 {
