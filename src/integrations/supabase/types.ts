@@ -83,7 +83,9 @@ export type Database = {
           id: string
           images: string[] | null
           partner1_name: string
+          partner1_photo: string | null
           partner2_name: string
+          partner2_photo: string | null
           reception_time: string | null
           registry_link: string | null
           template_id: string | null
@@ -102,7 +104,9 @@ export type Database = {
           id?: string
           images?: string[] | null
           partner1_name: string
+          partner1_photo?: string | null
           partner2_name: string
+          partner2_photo?: string | null
           reception_time?: string | null
           registry_link?: string | null
           template_id?: string | null
@@ -121,7 +125,9 @@ export type Database = {
           id?: string
           images?: string[] | null
           partner1_name?: string
+          partner1_photo?: string | null
           partner2_name?: string
+          partner2_photo?: string | null
           reception_time?: string | null
           registry_link?: string | null
           template_id?: string | null

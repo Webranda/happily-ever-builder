@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -21,6 +20,8 @@ interface WeddingDetails {
   venueAddress: string;
   eventTime: string;
   receptionTime: string;
+  partner1Photo?: string;
+  partner2Photo?: string;
 }
 
 interface EventItem {
@@ -118,6 +119,8 @@ const TemplatePreview = () => {
           venueAddress: weddingData.venue_address || '123 Evergreen Avenue, Portland, OR 97201',
           eventTime: weddingData.event_time || '4:00 PM',
           receptionTime: weddingData.reception_time || '6:00 PM',
+          partner1Photo: weddingData.partner1_photo,
+          partner2Photo: weddingData.partner2_photo,
         });
 
         // Set images from wedding data
@@ -199,6 +202,8 @@ const TemplatePreview = () => {
           partner1Name={weddingDetails.partner1Name}
           partner2Name={weddingDetails.partner2Name}
           coupleStory={weddingDetails.coupleStory}
+          partner1Photo={weddingDetails.partner1Photo}
+          partner2Photo={weddingDetails.partner2Photo}
         />
 
         {images.length > 0 && (

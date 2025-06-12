@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -7,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { Calendar as CalendarIcon } from 'lucide-react';
+import { Calendar as CalendarIcon, Upload, X } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { toast } from 'sonner';
 import { userStore } from '@/store/userStore';
@@ -29,6 +28,11 @@ const WeddingDetailsForm: React.FC = () => {
 
   // Add a state to keep wedding_site id for updates
   const [siteId, setSiteId] = useState<string | null>(null);
+
+  // Add states for partner photos
+  const [partner1Photo, setPartner1Photo] = useState<string>('');
+  const [partner2Photo, setPartner2Photo] = useState<string>('');
+  const [uploadingPhoto, setUploadingPhoto] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     // Couple details
@@ -84,6 +88,11 @@ const WeddingDetailsForm: React.FC = () => {
             accommodationInfo: weddingSite.accommodation_info || '',
             additionalNotes: weddingSite.additional_notes || '',
           });
+          
+          // Set partner photos
+          setPartner1Photo(weddingSite.partner1_photo || '');
+          setPartner2Photo(weddingSite.partner2_photo || '');
+          
           if (weddingSite.event_date) {
             try {
               setDate(new Date(weddingSite.event_date));
@@ -131,6 +140,66 @@ const WeddingDetailsForm: React.FC = () => {
     }
   };
 
+  const handlePhotoUpload = async (file: File, partner: 'partner1' | 'partner2') => {
+    if (!user?.id) {
+      toast.error("You must be signed in to upload photos");
+      return;
+    }
+
+    // Validate file type and size
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error("Please upload a JPEG or PNG image");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      toast.error("Please upload an image smaller than 5MB");
+      return;
+    }
+
+    setUploadingPhoto(partner);
+
+    try {
+      // Create a unique filename
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/${partner}-${Date.now()}.${fileExt}`;
+
+      // Upload to Supabase Storage
+      const { data, error } = await supabase.storage
+        .from('wedding-photos')
+        .upload(fileName, file);
+
+      if (error) throw error;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('wedding-photos')
+        .getPublicUrl(fileName);
+
+      // Update local state
+      if (partner === 'partner1') {
+        setPartner1Photo(publicUrl);
+      } else {
+        setPartner2Photo(publicUrl);
+      }
+
+      toast.success("Photo uploaded successfully!");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to upload photo");
+    } finally {
+      setUploadingPhoto(null);
+    }
+  };
+
+  const removePhoto = (partner: 'partner1' | 'partner2') => {
+    if (partner === 'partner1') {
+      setPartner1Photo('');
+    } else {
+      setPartner2Photo('');
+    }
+  };
+
   const nextStep = async () => {
     if (currentStep < sections.length - 1) {
       // Simple validation
@@ -167,6 +236,8 @@ const WeddingDetailsForm: React.FC = () => {
           registry_link: formData.registryLink,
           accommodation_info: formData.accommodationInfo,
           additional_notes: formData.additionalNotes,
+          partner1_photo: partner1Photo,
+          partner2_photo: partner2Photo,
           user_id: user.id,
         };
         if (siteId) {
@@ -198,6 +269,66 @@ const WeddingDetailsForm: React.FC = () => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
+
+  const PhotoUploadField = ({ partner, photo, partnerName }: { 
+    partner: 'partner1' | 'partner2'; 
+    photo: string; 
+    partnerName: string; 
+  }) => (
+    <div className="form-control">
+      <label className="form-label">{partnerName} Photo (Optional)</label>
+      
+      {photo ? (
+        <div className="relative">
+          <div className="w-32 h-32 mx-auto rounded-full overflow-hidden bg-gray-100">
+            <img 
+              src={photo} 
+              alt={partnerName}
+              className="w-full h-full object-cover"
+            />
+          </div>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => removePhoto(partner)}
+            className="absolute top-0 right-0 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+          >
+            <X className="h-3 w-3" />
+          </Button>
+        </div>
+      ) : (
+        <div className="w-32 h-32 mx-auto rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center bg-gray-50">
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                handlePhotoUpload(file, partner);
+              }
+            }}
+            className="hidden"
+            id={`${partner}-photo`}
+            disabled={uploadingPhoto === partner}
+          />
+          <label
+            htmlFor={`${partner}-photo`}
+            className="cursor-pointer flex flex-col items-center text-gray-500 hover:text-gray-700"
+          >
+            {uploadingPhoto === partner ? (
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-600"></div>
+            ) : (
+              <>
+                <Upload className="h-6 w-6 mb-1" />
+                <span className="text-xs text-center">Upload Photo</span>
+              </>
+            )}
+          </label>
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <div className="w-full">
@@ -270,6 +401,21 @@ const WeddingDetailsForm: React.FC = () => {
                   />
                 </div>
               </div>
+
+              {/* Partner Photos */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <PhotoUploadField 
+                  partner="partner1" 
+                  photo={partner1Photo} 
+                  partnerName={formData.partner1Name || "Partner 1"} 
+                />
+                <PhotoUploadField 
+                  partner="partner2" 
+                  photo={partner2Photo} 
+                  partnerName={formData.partner2Name || "Partner 2"} 
+                />
+              </div>
+
               <div className="form-control">
                 <label htmlFor="coupleStory" className="form-label">Your Story (Optional)</label>
                 <Textarea

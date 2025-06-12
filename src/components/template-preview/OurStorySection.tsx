@@ -7,14 +7,22 @@ interface OurStorySectionProps {
   partner1Name: string;
   partner2Name: string;
   coupleStory: string;
+  partner1Photo?: string;
+  partner2Photo?: string;
 }
 
 const OurStorySection: React.FC<OurStorySectionProps> = ({ 
   template, 
   partner1Name, 
   partner2Name, 
-  coupleStory 
+  coupleStory,
+  partner1Photo,
+  partner2Photo
 }) => {
+  // Default placeholder images
+  const defaultPartner1Photo = "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1288&auto=format&fit=crop";
+  const defaultPartner2Photo = "https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?q=80&w=1740&auto=format&fit=crop";
+
   return (
     <section className="py-16 px-6" style={{ backgroundColor: template.secondaryColor }}>
       <div className="max-w-4xl mx-auto text-center">
@@ -23,7 +31,7 @@ const OurStorySection: React.FC<OurStorySectionProps> = ({
           <div className="flex-1">
             <div className="aspect-square overflow-hidden rounded-full max-w-[200px] md:max-w-[250px] mx-auto">
               <img 
-                src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1288&auto=format&fit=crop" 
+                src={partner1Photo || defaultPartner1Photo} 
                 alt={partner1Name} 
                 className="w-full h-full object-cover"
               />
@@ -37,7 +45,7 @@ const OurStorySection: React.FC<OurStorySectionProps> = ({
           <div className="flex-1">
             <div className="aspect-square overflow-hidden rounded-full max-w-[200px] md:max-w-[250px] mx-auto">
               <img 
-                src="https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?q=80&w=1740&auto=format&fit=crop" 
+                src={partner2Photo || defaultPartner2Photo} 
                 alt={partner2Name} 
                 className="w-full h-full object-cover"
               />
