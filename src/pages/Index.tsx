@@ -1,12 +1,28 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+
+import React, { useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import Container from '@/components/ui/Container';
 import Logo from '@/components/ui/Logo';
 import { useAuth } from "@/hooks/useAuth";
 
 const Index = () => {
-  const { user, signOut } = useAuth();
+  const { user, signOut, loading } = useAuth();
+  const navigate = useNavigate();
+
+  // Redirect signed-in users to dashboard
+  useEffect(() => {
+    if (!loading && user) {
+      navigate('/dashboard');
+    }
+  }, [user, loading, navigate]);
+
+  // Don't render anything while checking auth status for signed-in users
+  if (loading) {
+    return <div className="min-h-screen w-full flex items-center justify-center">Loading...</div>;
+  }
+
+  // If user is signed in, they'll be redirected, so this only renders for logged-out users
   return (
     <div className="min-h-screen w-full">
       {/* Navigation */}
@@ -15,24 +31,15 @@ const Index = () => {
           <Logo size="lg" />
           
           <div className="flex items-center gap-4">
-            {user ? (
-              <>
-                <span className="text-wedding-navy font-medium">Welcome!</span>
-                <Button className="bg-wedding-navy text-white" onClick={signOut}>Sign Out</Button>
-              </>
-            ) : (
-              <>
-                <Link to="/auth?mode=login" className="text-wedding-navy hover:text-wedding-navy/80 font-medium">
-                  Sign In
-                </Link>
-                <Button 
-                  className="bg-wedding-gold hover:bg-wedding-gold/90 text-wedding-navy font-medium" 
-                  asChild
-                >
-                  <Link to="/auth">Get Started</Link>
-                </Button>
-              </>
-            )}
+            <Link to="/auth?mode=login" className="text-wedding-navy hover:text-wedding-navy/80 font-medium">
+              Sign In
+            </Link>
+            <Button 
+              className="bg-wedding-gold hover:bg-wedding-gold/90 text-wedding-navy font-medium" 
+              asChild
+            >
+              <Link to="/auth">Get Started</Link>
+            </Button>
           </div>
         </div>
       </nav>
