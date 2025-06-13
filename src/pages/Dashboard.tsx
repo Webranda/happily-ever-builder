@@ -6,8 +6,11 @@ import Logo from '@/components/ui/Logo';
 import Dashboard from '@/components/dashboard/Dashboard';
 import { Button } from '@/components/ui/button';
 import { LogOut } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 const DashboardPage = () => {
+  const { signOut } = useAuth();
+
   return (
     <div className="min-h-screen w-full bg-gray-50">
       {/* Header */}
@@ -21,12 +24,10 @@ const DashboardPage = () => {
             <Button 
               variant="ghost" 
               className="text-gray-600 hover:text-wedding-navy"
-              asChild
+              onClick={signOut}
             >
-              <Link to="/">
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Sign Out</span>
-              </Link>
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>Sign Out</span>
             </Button>
           </div>
         </div>

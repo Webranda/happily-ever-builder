@@ -10,19 +10,11 @@ const Index = () => {
   const { user, signOut, loading } = useAuth();
   const navigate = useNavigate();
 
-  // Redirect signed-in users to dashboard
-  useEffect(() => {
-    if (!loading && user) {
-      navigate('/dashboard');
-    }
-  }, [user, loading, navigate]);
-
-  // Don't render anything while checking auth status for signed-in users
+  // Don't render anything while checking auth status
   if (loading) {
     return <div className="min-h-screen w-full flex items-center justify-center">Loading...</div>;
   }
 
-  // If user is signed in, they'll be redirected, so this only renders for logged-out users
   return (
     <div className="min-h-screen w-full">
       {/* Navigation */}
@@ -31,15 +23,36 @@ const Index = () => {
           <Logo size="lg" />
           
           <div className="flex items-center gap-4">
-            <Link to="/auth?mode=login" className="text-wedding-navy hover:text-wedding-navy/80 font-medium">
-              Sign In
-            </Link>
-            <Button 
-              className="bg-wedding-gold hover:bg-wedding-gold/90 text-wedding-navy font-medium" 
-              asChild
-            >
-              <Link to="/auth">Get Started</Link>
-            </Button>
+            {user ? (
+              <>
+                <span className="text-wedding-navy font-medium">Welcome!</span>
+                <Button 
+                  className="bg-wedding-navy hover:bg-wedding-navy/90 text-white" 
+                  asChild
+                >
+                  <Link to="/dashboard">Dashboard</Link>
+                </Button>
+                <Button 
+                  variant="outline"
+                  className="border-wedding-navy text-wedding-navy hover:bg-wedding-navy/5" 
+                  onClick={signOut}
+                >
+                  Sign Out
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link to="/auth?mode=login" className="text-wedding-navy hover:text-wedding-navy/80 font-medium">
+                  Sign In
+                </Link>
+                <Button 
+                  className="bg-wedding-gold hover:bg-wedding-gold/90 text-wedding-navy font-medium" 
+                  asChild
+                >
+                  <Link to="/auth">Get Started</Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </nav>
@@ -69,7 +82,9 @@ const Index = () => {
               className="bg-wedding-gold hover:bg-wedding-gold/90 text-wedding-navy font-medium px-8 btn-hover-effect"
               asChild
             >
-              <Link to="/auth">Create Your Website</Link>
+              <Link to={user ? "/dashboard" : "/auth"}>
+                {user ? "Go to Dashboard" : "Create Your Website"}
+              </Link>
             </Button>
             
             <Button 
@@ -146,7 +161,9 @@ const Index = () => {
             className="bg-wedding-navy hover:bg-wedding-navy/90 text-white px-10 py-6 h-auto text-lg animate-scale-in btn-hover-effect"
             asChild
           >
-            <Link to="/auth">Get Started Free</Link>
+            <Link to={user ? "/dashboard" : "/auth"}>
+              {user ? "Go to Dashboard" : "Get Started Free"}
+            </Link>
           </Button>
         </Container>
       </section>
