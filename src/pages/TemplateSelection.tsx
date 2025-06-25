@@ -1,13 +1,31 @@
 
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import Container from '@/components/ui/Container';
 import Logo from '@/components/ui/Logo';
 import TemplateSelector from '@/components/templates/TemplateSelector';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 
 const TemplateSelection = () => {
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate('/auth');
+    }
+  }, [user, loading, navigate]);
+
+  if (loading) {
+    return <div className="min-h-screen w-full flex items-center justify-center">Loading...</div>;
+  }
+
+  if (!user) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen w-full bg-white">
       {/* Header */}

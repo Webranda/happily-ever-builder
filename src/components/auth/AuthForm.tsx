@@ -84,22 +84,27 @@ const AuthForm: React.FC = () => {
           setIsLoading(false);
           return;
         }
+        
         const { error: signUpError } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
           options: {
+            emailRedirectTo: `${window.location.origin}/auth?mode=login`,
             data: {
               first_name: formData.firstName,
               last_name: formData.lastName,
             }
           }
         });
+        
         if (signUpError) {
           setFormError(signUpError.message);
           throw signUpError;
         }
-        toast.success("Account created! Check your email (inbox/spam) to confirm.");
-        setTimeout(() => navigate("/dashboard"), 1000);
+        
+        toast.success("Account created! Please check your email to confirm your account.");
+        // Redirect to email confirmation page
+        navigate("/email-confirmation");
       } else {
         const { error: signInError } = await supabase.auth.signInWithPassword({
           email: formData.email,
