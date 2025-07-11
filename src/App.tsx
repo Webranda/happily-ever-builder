@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import EmailConfirmation from "./pages/EmailConfirmation";
+import ResetPassword from "./pages/ResetPassword";
 import WeddingForm from "./pages/WeddingForm";
 import TemplateSelection from "./pages/TemplateSelection";
 import Dashboard from "./pages/Dashboard";
@@ -29,6 +30,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/email-confirmation" element={<EmailConfirmation />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/wedding-form" element={<WeddingForm />} />
           <Route path="/template-selection" element={<TemplateSelection />} />
           <Route path="/templates" element={<Templates />} />
